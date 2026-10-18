@@ -9,6 +9,7 @@ export const translations = {
       "Your": "Tu",
       "credit": "fiado",
       "notebook, now digital.": "cuaderno, ahora digital.",
+      "Your credit notebook, now digital.": "Tu libreta de fiados, ahora digital.",
       "or": "o",
       "of": "de",
       "page": "página",

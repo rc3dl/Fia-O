@@ -18,7 +18,7 @@ export default function Home() {
           {/* Left */}
           <div className="text-center lg:text-left">
             <h1 className="text-white font-bold leading-[1.1] text-4xl sm:text-5xl lg:text-6xl" style={{ fontFamily: "Poppins" }}>
-              {t("Your")} <span style={{ color: "#F9D103" }}>{t("credit")}</span> {t("notebook, now digital.")}
+              {t("Your credit notebook, now digital.")}
             </h1>
             <p className="text-white/90 mt-5 text-base sm:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0">
               {t("FIA'O digitizes customer, debt, and payment management for convenience stores and small businesses in Panama, replacing the traditional paper ledger with a modern digital management system.")}
