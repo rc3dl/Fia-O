@@ -347,3 +347,4 @@ Every table has Row Level Security: a merchant only reads and changes rows where
 ## License
 
 No license has been chosen yet. Until one is added, all rights are reserved by the author.
+volver a actualizar la web
