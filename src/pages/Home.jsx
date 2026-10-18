@@ -7,7 +7,7 @@ import { ShieldCheck, BookOpen, Bell, BarChart3, Smartphone, Wallet } from "luci
 import { useLanguage } from "@/lib/LanguageContext";
 
 export default function Home() {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--page-bg)" }}>
       <Navbar />
@@ -17,9 +17,13 @@ export default function Home() {
         <div className="mx-auto max-w-6xl px-6 py-10 lg:py-16 grid lg:grid-cols-2 gap-10 items-center">
           {/* Left */}
           <div className="text-center lg:text-left">
-            <h1 className="text-white font-bold leading-[1.1] text-4xl sm:text-5xl lg:text-6xl" style={{ fontFamily: "Poppins" }}>
-              {t("Your credit notebook, now digital.")}
-            </h1>
+           <h1 className="text-white font-bold leading-[1.1] text-4xl sm:text-5xl lg:text-6xl" style={{ fontFamily: "Poppins" }}>
+  {language === "en" ? (
+    <>Your <span style={{ color: "#F9D103" }}>Credit</span> notebook, now digital.</>
+  ) : (
+    <>Tu libreta de <span style={{ color: "#F9D103" }}>fiados</span>, ahora digital.</>
+  )}
+</h1>
             <p className="text-white/90 mt-5 text-base sm:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0">
               {t("FIA'O digitizes customer, debt, and payment management for convenience stores and small businesses in Panama, replacing the traditional paper ledger with a modern digital management system.")}
             </p>
