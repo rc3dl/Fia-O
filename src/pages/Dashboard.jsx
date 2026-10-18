@@ -59,7 +59,7 @@ export default function Dashboard() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
           {/* Welcome */}
           <div className="mb-8">
-            <h1 className=" var(--text) font-bold text-3xl sm:text-4xl" style={{ fontFamily: "Poppins" }}>
+            <h1 className="text-white font-bold text-3xl sm:text-4xl" style={{ fontFamily: "Poppins" }}>
               {name ? t(`Welcome back, ${name} 👋`) : t("Welcome back 👋")}
             </h1>
             <p className="text-white/80 mt-2">
