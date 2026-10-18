@@ -6,6 +6,7 @@ import { Plus } from "lucide-react";
 import { useAuth } from "@/lib/AuthContext";
 import { sendContactMessage } from "@/lib/contactApi";
 import { validateContact, CONTACT_LIMITS } from "@/lib/contact";
+import { useLanguage } from "@/lib/LanguageContext";
 
 // Respuestas que solo prometen lo que la web realmente hace.
 export const FAQS = [
@@ -32,6 +33,7 @@ export const FAQS = [
 ];
 
 function FaqItem({ item }) {
+    const { t } = useLanguage();
   const [open, setOpen] = useState(false);
   return (
     <div className="rounded-2xl overflow-hidden" style={{ backgroundColor: "var(--white)", border: "1px solid var(--border-cream)" }}>
@@ -40,14 +42,14 @@ function FaqItem({ item }) {
         aria-expanded={open}
         className="w-full flex items-center justify-between px-5 py-4 text-left"
       >
-        <span className="font-semibold text-sm sm:text-base" style={{ color: "var(--text)" }}>{item.q}</span>
+        <span className="font-semibold text-sm sm:text-base" style={{ color: "var(--text)" }}>{t(item.q)}</span>
         <span className="w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ml-3" style={{ backgroundColor: "var(--surface)" }}>
           <Plus className={`w-4 h-4 transition-transform ${open ? "rotate-45" : ""}`} style={{ color: "var(--accent-text)" }} />
         </span>
       </button>
       {open && (
         <div className="px-5 pb-4">
-          <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>{item.a}</p>
+          <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>{t(item.a)}</p>
         </div>
       )}
     </div>
@@ -57,6 +59,7 @@ function FaqItem({ item }) {
 const fieldStyle = { backgroundColor: "var(--surface)", borderColor: "var(--border-cream)", color: "var(--text)" };
 
 export default function Contact() {
+    const { t } = useLanguage();
   const { user } = useAuth();
   // Nombre y correo ya vienen de tu cuenta; solo cambian si la persona los edita.
   const [draft, setDraft] = useState({});
@@ -94,10 +97,10 @@ export default function Contact() {
           {/* Header */}
           <div className="text-center mb-10">
             <h1 className="font-bold text-3xl sm:text-4xl mb-3" style={{ color: "#FFFFFF", fontFamily: "Poppins" }}>
-              Have questions? We are here to help
+              {t("Have questions? We are here to help")}
             </h1>
             <p className="text-white/80 max-w-xl mx-auto">
-              Check out the FAQs below or send us a message and we'll get back to you by email.
+              {t("Check out the FAQs below or send us a message and we'll get back to you by email.")}
             </p>
           </div>
 
@@ -111,22 +114,22 @@ export default function Contact() {
 
             {/* Contact form */}
             <div className="rounded-3xl p-6 sm:p-8 h-fit" style={{ backgroundColor: "var(--white)", boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}>
-              <h2 className="font-bold text-xl mb-5" style={{ color: "var(--text)" }}>Send us a message</h2>
+              <h2 className="font-bold text-xl mb-5" style={{ color: "var(--text)" }}>{t("Send us a message")}</h2>
               <form onSubmit={submit} className="space-y-4" noValidate>
                 <div>
-                  <label htmlFor="contact-name" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>NAME</label>
+                  <label htmlFor="contact-name" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>{t("NAME")}</label>
                   <input
                     id="contact-name"
                     value={name}
                     onChange={(e) => { setDraft({ ...draft, name: e.target.value }); setNote(null); }}
-                    placeholder="Your name"
+                    placeholder={t("Your name")}
                     maxLength={CONTACT_LIMITS.name}
                     className="w-full rounded-xl px-4 py-3 text-sm border outline-none"
                     style={fieldStyle}
                   />
                 </div>
                 <div>
-                  <label htmlFor="contact-email" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>EMAIL (where we'll reply)</label>
+                  <label htmlFor="contact-email" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>{t("EMAIL (where we'll reply)")}</label>
                   <input
                     id="contact-email"
                     type="email"
@@ -139,19 +142,19 @@ export default function Contact() {
                   />
                 </div>
                 <div>
-                  <label htmlFor="contact-message" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>MESSAGE</label>
+                  <label htmlFor="contact-message" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>{t("MESSAGE")}</label>
                   <textarea
                     id="contact-message"
                     value={message}
                     onChange={(e) => { setMessage(e.target.value); setNote(null); }}
-                    placeholder="Tell us how we can help you"
+                    placeholder={t("Tell us how we can help you")}
                     rows={5}
                     maxLength={CONTACT_LIMITS.messageMax}
                     className="w-full rounded-xl px-4 py-3 text-sm border outline-none resize-none"
                     style={fieldStyle}
                   />
                   <p className="text-[11px] mt-1 text-right" style={{ color: left < 100 ? "var(--bad-text)" : "var(--text-faint)" }}>
-                    {left} characters left
+                    {left} {t("characters left")}
                   </p>
                 </div>
 
@@ -161,7 +164,7 @@ export default function Contact() {
                     className="text-sm rounded-xl px-4 py-3"
                     style={{ backgroundColor: note.type === "ok" ? "var(--ok-bg)" : "var(--bad-bg)", color: note.type === "ok" ? "var(--ok-text)" : "var(--bad-text)" }}
                   >
-                    {note.text}
+                    {t(note.text)}
                   </p>
                 )}
 
@@ -171,7 +174,7 @@ export default function Contact() {
                   className="w-full py-3.5 rounded-full font-bold text-sm text-white transition-transform hover:scale-[1.02] disabled:opacity-60 disabled:hover:scale-100"
                   style={{ backgroundColor: "#B91C1C" }}
                 >
-                  {send.isPending ? "Sending..." : "Send message"}
+                  {send.isPending ? t("Sending...") : t("Send message")}
                 </button>
               </form>
             </div>

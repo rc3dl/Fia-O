@@ -48,21 +48,22 @@ export function previousRange(from, to) {
 const inRange = (ymd, from, to) => ymd >= from && ymd <= to;
 
 // Divide el período en semanas (o en meses si es muy largo) para el gráfico.
-export function buildBuckets(from, to) {
+export function buildBuckets(from, to, locale = "en-GB") {
   const buckets = [];
   if (daysBetween(from, to) + 1 <= 84) {
     for (let start = from; start <= to; start = addDays(start, 7)) {
       const end = addDays(start, 6) > to ? to : addDays(start, 6);
-      buckets.push({ label: shortYmd(start), start, end });
+      buckets.push({ label: shortYmd(start, locale), start, end });
     }
   } else {
     let cursor = startOfMonth(from);
     while (cursor <= to) {
       const monthEnd = endOfMonth(cursor);
       buckets.push({
-        label: new Intl.DateTimeFormat("en-GB", { month: "short", year: "2-digit", timeZone: "UTC" })
+        label: new Intl.DateTimeFormat(locale, { month: "short", year: "2-digit", timeZone: "UTC" })
           .format(new Date(`${cursor}T00:00:00Z`))
-          .toUpperCase(),
+          .toUpperCase()
+          .replace(/\s+DE\s+/g, " "),
         start: cursor < from ? from : cursor,
         end: monthEnd > to ? to : monthEnd,
       });
@@ -147,7 +148,7 @@ export function filterLabel(clients, filter) {
 // ---------------------------------------------------------------------------
 // El reporte completo
 // ---------------------------------------------------------------------------
-export function buildReport({ clients, entries, names = {}, from, to, filter = "all", today = todayPanama() }) {
+export function buildReport({ clients, entries, names = {}, from, to, filter = "all", today = todayPanama(), locale = "en-GB" }) {
   const allowed = allowedClientIds(clients, filter);
   const scopedEntries = allowed ? entries.filter((e) => allowed.has(e.client_id)) : entries;
   const scopedClients = allowed ? clients.filter((c) => allowed.has(c.id)) : clients;
@@ -194,7 +195,7 @@ export function buildReport({ clients, entries, names = {}, from, to, filter = "
   };
 
   // --- Gráfico
-  const chart = buildBuckets(from, to).map((b) => {
+  const chart = buildBuckets(from, to, locale).map((b) => {
     const issued = sum(within(fiados, b.start, b.end));
     const received = sum(within(payments, b.start, b.end));
     const overdue = fiados
@@ -253,25 +254,39 @@ export function pageWindow(page, pages, max = 5) {
 }
 
 // Los datos del reporte listos para Excel o PDF.
-export function reportTables(report, { filterLabel: customers = "All customers" } = {}) {
+export function reportTables(report, { filterLabel: customers = "All customers", language = "en" } = {}) {
+  const es = language === "es";
   const c = report.cards;
+  const labels = es
+    ? { summary: "Resumen", transactions: "Transacciones", metric: "Indicador", value: "Valor", empty: "No hay movimientos en este período.", page: "Página" }
+    : { summary: "Summary", transactions: "Transactions", metric: "Metric", value: "Value", empty: "No transactions in this period.", page: "Page" };
   const summary = [
-    { label: "Total active credit", value: c.activeCredit },
-    { label: "Collected in period", value: c.collected },
-    { label: "Pending balances", value: c.pending },
-    { label: "Overdue amount", value: c.overdueAmount },
-    { label: "Credit issued in period", value: report.issued },
-  ].map((s) => ({ ...s, text: money(s.value) }));
-  summary.push({ label: "Customers", value: c.customers, text: String(c.customers) });
+    { label: es ? "Crédito activo total" : "Total active credit", value: c.activeCredit },
+    { label: es ? "Cobrado en el período" : "Collected in period", value: c.collected },
+    { label: es ? "Saldos pendientes" : "Pending balances", value: c.pending },
+    { label: es ? "Monto vencido" : "Overdue amount", value: c.overdueAmount },
+    { label: es ? "Fiados registrados en el período" : "Credit issued in period", value: report.issued },
+  ].map((item) => ({ ...item, text: money(item.value) }));
+  summary.push({ label: es ? "Clientes" : "Customers", value: c.customers, text: String(c.customers) });
   return {
-    title: "FIA'O - Business Report",
-    subtitle: [`Period: ${report.range.from} to ${report.range.to}`, `Customers: ${customers}`],
+    title: es ? "FIA'O - Informe del negocio" : "FIA'O - Business Report",
+    subtitle: es
+      ? [`Período: ${report.range.from} a ${report.range.to}`, `Clientes: ${customers}`]
+      : [`Period: ${report.range.from} to ${report.range.to}`, `Customers: ${customers}`],
     summary,
-    headers: ["Date", "Customer", "Description", "Type", "Amount (B/.)", "Status"],
-    rows: report.rows.map((r) => ({
-      cells: [r.date, r.name, r.description, r.kind === "pago" ? "Payment" : "Credit", r.kind === "pago" ? -r.amount : r.amount, r.status],
-      text: [r.date, r.name, r.description, r.kind === "pago" ? "Payment" : "Credit", (r.kind === "pago" ? "- " : "") + money(r.amount), r.status],
-    })),
+    headers: es
+      ? ["Fecha", "Cliente", "Descripción", "Tipo", "Monto (B/.)", "Estado"]
+      : ["Date", "Customer", "Description", "Type", "Amount (B/.)", "Status"],
+    labels,
+    rows: report.rows.map((r) => {
+      const payment = r.kind === "pago";
+      const type = es ? (payment ? "Abono" : "Fiado") : (payment ? "Payment" : "Credit");
+      const status = es ? ({ Paid: "Pagado", Pending: "Pendiente", Overdue: "Vencido" }[r.status] || r.status) : r.status;
+      return {
+        cells: [r.date, r.name, r.description, type, payment ? -r.amount : r.amount, status],
+        text: [r.date, r.name, r.description, type, (payment ? "- " : "") + money(r.amount), status],
+      };
+    }),
   };
 }
 

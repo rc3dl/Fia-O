@@ -97,9 +97,12 @@ export function waLink(phone, text) {
   return `https://wa.me/${digits}?text=${encodeURIComponent(text)}`;
 }
 
-// Mensaje que recibe el cliente (en español, porque lo lee tu cliente).
-export function reminderText({ name, balance, store }) {
+// Mensaje para WhatsApp; utiliza el idioma elegido en la interfaz.
+export function reminderText({ name, balance, store, language = "es" }) {
   const first = (name || "").trim().split(/\s+/)[0] || "";
+  if (language === "en") {
+    return `Hi ${first}, this is a friendly reminder that you have an outstanding balance of ${money(balance)} at ${store || "our store"}. Thank you, and we hope to see you soon!`;
+  }
   return `Hola ${first}, te recordamos que tienes ${money(balance)} pendiente en ${store || "nuestro negocio"}. ¡Gracias y te esperamos!`;
 }
 
@@ -150,11 +153,11 @@ export function addDays(ymd, days) {
 }
 
 // "Today", "Yesterday" o "14 JUL".
-export function relativeDay(timestamp, today = todayPanama()) {
+export function relativeDay(timestamp, today = todayPanama(), locale = "en-GB") {
   const day = dateInPanama(timestamp);
   if (day === today) return "Today";
   if (day === addDays(today, -1)) return "Yesterday";
-  return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", timeZone: "America/Panama" })
+  return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "short", timeZone: "America/Panama" })
     .format(new Date(timestamp))
     .toUpperCase();
 }
@@ -195,15 +198,15 @@ export function summarize(clients, entries, today = todayPanama()) {
 }
 
 // "14 JUL" a partir de una fecha-hora de la base de datos (hora de Panamá).
-export function shortDate(timestamp) {
-  return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", timeZone: "America/Panama" })
+export function shortDate(timestamp, locale = "en-GB") {
+  return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "short", timeZone: "America/Panama" })
     .format(new Date(timestamp))
     .toUpperCase();
 }
 
 // "24 OCT" a partir de una fecha sin hora ("2026-10-24"), como la fecha límite de un fiado.
-export function shortYmd(ymd) {
-  return new Intl.DateTimeFormat("en-GB", { day: "2-digit", month: "short", timeZone: "UTC" })
+export function shortYmd(ymd, locale = "en-GB") {
+  return new Intl.DateTimeFormat(locale, { day: "2-digit", month: "short", timeZone: "UTC" })
     .format(new Date(`${ymd}T00:00:00Z`))
     .toUpperCase();
 }

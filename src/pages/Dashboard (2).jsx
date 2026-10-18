@@ -7,6 +7,7 @@ import { Wallet, Package, Users, BarChart3, Mail, TrendingUp, Banknote, AlertTri
 import { useAuth } from "@/lib/AuthContext";
 import { fetchDashboard } from "@/lib/dashboardApi";
 import { money, summarize, rankDebtors, relativeDay, todayPanama, firstName } from "@/lib/credit";
+import { useLanguage } from "@/lib/LanguageContext";
 
 const QUICK_LINKS = [
   { label: "Credit", path: "/credit", icon: Wallet, desc: "Manage customer debts and register payments." },
@@ -20,6 +21,7 @@ const card = { backgroundColor: "var(--surface)" };
 const inner = { backgroundColor: "var(--white)", border: "1px solid var(--border-cream)" };
 
 export default function Dashboard() {
+    const { t, language } = useLanguage();
   const { user } = useAuth();
   const { data, isLoading, isError, error, refetch } = useQuery({ queryKey: ["dashboard"], queryFn: fetchDashboard });
 
@@ -44,9 +46,9 @@ export default function Dashboard() {
 
   // Pequeño dato en vivo bajo algunos accesos rápidos.
   const hints = isLoading || isError ? {} : {
-    "/credit": overview.overdueCustomers > 0 ? `${overview.overdueCustomers} overdue` : "",
-    "/clients": `${clients.length} ${clients.length === 1 ? "customer" : "customers"}`,
-    "/products": lowStock.length > 0 ? `${lowStock.length} running low` : "",
+    "/credit": overview.overdueCustomers > 0 ? t(`${overview.overdueCustomers} overdue`) : "",
+    "/clients": t(`${clients.length} ${clients.length === 1 ? "customer" : "customers"}`),
+    "/products": lowStock.length > 0 ? t(`${lowStock.length} running low`) : "",
   };
 
   return (
@@ -58,18 +60,18 @@ export default function Dashboard() {
           {/* Welcome */}
           <div className="mb-8">
             <h1 className="text-white font-bold text-3xl sm:text-4xl" style={{ fontFamily: "Poppins" }}>
-              {name ? `Welcome back, ${name} 👋` : "Welcome back 👋"}
+              {name ? t(`Welcome back, ${name} 👋`) : t("Welcome back 👋")}
             </h1>
             <p className="text-white/80 mt-2">
-              Manage your fiado, manage your business. Here's your overview for today.
+              {t("Manage your fiado, manage your business. Here's your overview for today.")}
             </p>
           </div>
 
           {isError && (
             <div role="alert" className="mb-6 rounded-2xl px-5 py-4 flex flex-wrap items-center justify-between gap-3" style={{ backgroundColor: "var(--bad-bg)" }}>
-              <p className="text-sm font-semibold" style={{ color: "var(--bad-text)" }}>Could not load your numbers: {error.message}</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--bad-text)" }}>{t("Could not load your numbers:")} {t(error.message)}</p>
               <button onClick={() => refetch()} className="px-4 py-1.5 rounded-full text-sm font-bold text-white" style={{ backgroundColor: "#B91C1C" }}>
-                Try again
+                {t("Try again")}
               </button>
             </div>
           )}
@@ -78,9 +80,9 @@ export default function Dashboard() {
           {lowStock.length > 0 && (
             <Link to="/products" className="mb-6 rounded-2xl px-5 py-4 flex items-center justify-between gap-3" style={{ backgroundColor: "var(--warn-bg)" }}>
               <p className="text-sm font-semibold" style={{ color: "var(--warn-text)" }}>
-                {lowStock.length} {lowStock.length === 1 ? "product is" : "products are"} running low:{" "}
+                {lowStock.length} {lowStock.length === 1 ? t("product is") : t("products are")} {t("running low:")}{" "}
                 {lowStock.slice(0, 3).map((p) => p.name).join(", ")}
-                {lowStock.length > 3 ? ` and ${lowStock.length - 3} more` : ""}
+                {lowStock.length > 3 ? ` ${t(`and ${lowStock.length - 3} more`)}` : ""}
               </p>
               <ArrowRight className="w-4 h-4 flex-shrink-0" style={{ color: "var(--warn-text)" }} />
             </Link>
@@ -92,7 +94,7 @@ export default function Dashboard() {
               <div key={s.label} className="p-4 rounded-2xl" style={card}>
                 <s.icon className="w-5 h-5 mb-2" style={{ color: s.color }} />
                 <p className="font-bold text-xl" style={{ color: "var(--text)" }}>{s.value}</p>
-                <p className="text-xs" style={{ color: "var(--text-muted)" }}>{s.label}</p>
+                <p className="text-xs" style={{ color: "var(--text-muted)" }}>{t(s.label)}</p>
               </div>
             ))}
           </div>
@@ -102,14 +104,14 @@ export default function Dashboard() {
             <div className="grid lg:grid-cols-2 gap-5 mb-8">
               <div className="rounded-2xl p-5" style={card}>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-bold text-lg" style={{ color: "var(--text)" }}>Who to collect</h2>
+                  <h2 className="font-bold text-lg" style={{ color: "var(--text)" }}>{t("Who to collect")}</h2>
                   <Link to="/clients" className="text-sm font-semibold flex items-center gap-1" style={{ color: "var(--accent-text)" }}>
-                    All clients <ArrowRight className="w-3.5 h-3.5" />
+                    {t("All clients")} <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
                 {debtors.length === 0 ? (
                   <p className="text-sm" style={{ color: "var(--text-faint)" }}>
-                    {clients.length === 0 ? "Add your first customer to get started." : "Nobody owes you right now. 🎉"}
+                    {clients.length === 0 ? t("Add your first customer to get started.") : t("Nobody owes you right now. 🎉")}
                   </p>
                 ) : (
                   <div className="space-y-2">
@@ -118,7 +120,7 @@ export default function Dashboard() {
                         <div className="min-w-0">
                           <p className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>{d.name}</p>
                           <p className="text-xs" style={{ color: d.overdue > 0 ? "var(--bad-text)" : "var(--text-faint)" }}>
-                            {d.overdue > 0 ? `Overdue ${money(d.overdue)}` : d.daysPending > 0 ? `Pending for ${d.daysPending} ${d.daysPending === 1 ? "day" : "days"}` : "Pending since today"}
+                            {d.overdue > 0 ? t(`Overdue ${money(d.overdue)}`) : d.daysPending > 0 ? t(`Pending for ${d.daysPending} ${d.daysPending === 1 ? "day" : "days"}`) : t("Pending since today")}
                           </p>
                         </div>
                         <span className="text-sm font-bold" style={{ color: "var(--accent-text)" }}>{money(d.balance)}</span>
@@ -130,21 +132,21 @@ export default function Dashboard() {
 
               <div className="rounded-2xl p-5" style={card}>
                 <div className="flex items-center justify-between mb-4">
-                  <h2 className="font-bold text-lg" style={{ color: "var(--text)" }}>Recent activity</h2>
+                  <h2 className="font-bold text-lg" style={{ color: "var(--text)" }}>{t("Recent activity")}</h2>
                   <Link to="/credit" className="text-sm font-semibold flex items-center gap-1" style={{ color: "var(--accent-text)" }}>
-                    Debts & payments <ArrowRight className="w-3.5 h-3.5" />
+                    {t("Debts & payments")} <ArrowRight className="w-3.5 h-3.5" />
                   </Link>
                 </div>
                 {entries.length === 0 ? (
-                  <p className="text-sm" style={{ color: "var(--text-faint)" }}>No activity yet.</p>
+                  <p className="text-sm" style={{ color: "var(--text-faint)" }}>{t("No activity yet.")}</p>
                 ) : (
                   <div className="space-y-2">
                     {entries.slice(0, 5).map((a) => (
                       <div key={a.id} className="p-3 rounded-xl" style={inner}>
                         <p className="text-sm font-medium" style={{ color: "var(--text)" }}>
-                          {names[a.client_id] || "Client"}, {a.kind === "pago" ? "Paid" : "New debt"} {money(a.amount)}
+                          {names[a.client_id] || t("Client")}, {a.kind === "pago" ? t("Paid") : t("New debt")} {money(a.amount)}
                         </p>
-                        <p className="text-xs mt-0.5" style={{ color: "var(--text-faint)" }}>{relativeDay(a.created_at, today)}</p>
+                        <p className="text-xs mt-0.5" style={{ color: "var(--text-faint)" }}>{t(relativeDay(a.created_at, today, language === "es" ? "es-PA" : "en-GB"))}</p>
                       </div>
                     ))}
                   </div>
@@ -155,7 +157,7 @@ export default function Dashboard() {
 
           {/* Quick access */}
           <h2 className="text-white font-bold text-xl mb-4" style={{ fontFamily: "Poppins" }}>
-            Quick access
+            {t("Quick access")}
           </h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {QUICK_LINKS.map((q) => (
@@ -171,10 +173,10 @@ export default function Dashboard() {
                   </div>
                   <div className="flex-1">
                     <div className="flex items-center justify-between">
-                      <h3 className="font-bold text-base" style={{ color: "var(--text)" }}>{q.label}</h3>
+                      <h3 className="font-bold text-base" style={{ color: "var(--text)" }}>{t(q.label)}</h3>
                       <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" style={{ color: "var(--accent-text)" }} />
                     </div>
-                    <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>{q.desc}</p>
+                    <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>{t(q.desc)}</p>
                     {hints[q.path] && (
                       <p className="text-xs font-semibold mt-1.5" style={{ color: "var(--accent-text)" }}>{hints[q.path]}</p>
                     )}

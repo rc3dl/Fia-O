@@ -9,6 +9,7 @@ import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ProfileGate from '@/components/ProfileGate';   // debajo de: import ProtectedRoute ...
 import { ThemeProvider } from '@/lib/ThemeContext';
+import { LanguageProvider } from '@/lib/LanguageContext';
 import Home from '@/pages/Home';
 import Credit from '@/pages/Credit';
 import Products from '@/pages/Products';
@@ -92,13 +93,15 @@ function App() {
   return (
     <AuthProvider>
       <ThemeProvider>
-        <QueryClientProvider client={queryClientInstance}>
-          <Router>
-          <ScrollToTop />
-          <AuthenticatedApp />
-          </Router>
-          <Toaster />
-        </QueryClientProvider>
+        <LanguageProvider>
+          <QueryClientProvider client={queryClientInstance}>
+            <Router>
+              <ScrollToTop />
+              <AuthenticatedApp />
+            </Router>
+            <Toaster />
+          </QueryClientProvider>
+        </LanguageProvider>
       </ThemeProvider>
     </AuthProvider>
   )

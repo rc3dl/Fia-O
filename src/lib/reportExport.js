@@ -19,17 +19,17 @@ export function downloadBlob(blob, filename) {
 export function exportExcel(tables, filename) {
   const bytes = buildXlsx([
     {
-      name: "Summary",
+      name: tables.labels?.summary || "Summary",
       rows: [
         [{ v: tables.title, s: S.title }],
         ...tables.subtitle.map((line) => [line]),
         [],
-        [{ v: "Metric", s: S.bold }, { v: "Value", s: S.bold }],
-        ...tables.summary.map((s) => [s.label, s.label === "Customers" ? s.value : { v: cents(s.value), s: S.money }]),
+        [{ v: tables.labels?.metric || "Metric", s: S.bold }, { v: tables.labels?.value || "Value", s: S.bold }],
+        ...tables.summary.map((s) => [s.label, ["Customers", "Clientes"].includes(s.label) ? s.value : { v: cents(s.value), s: S.money }]),
       ],
     },
     {
-      name: "Transactions",
+      name: tables.labels?.transactions || "Transactions",
       rows: [
         tables.headers.map((v) => ({ v, s: S.bold })),
         ...tables.rows.map((r) => r.cells.map((cell, i) => (i === 4 ? { v: cents(cell), s: S.money } : cell))),
@@ -69,7 +69,7 @@ export function drawReportPdf(doc, tables) {
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
-  doc.text("Summary", left, y);
+  doc.text(tables.labels?.summary || "Summary", left, y);
   y += 8;
   doc.setDrawColor(200);
   doc.line(left, y, right, y);
@@ -96,14 +96,14 @@ export function drawReportPdf(doc, tables) {
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
-  doc.text("Transactions", left, y);
+  doc.text(tables.labels?.transactions || "Transactions", left, y);
   y += 16;
   header();
 
   if (tables.rows.length === 0) {
     doc.setFont("helvetica", "normal");
     doc.setFontSize(10);
-    doc.text("No transactions in this period.", left, y);
+    doc.text(tables.labels?.empty || "No transactions in this period.", left, y);
   }
   for (const row of tables.rows) {
     if (y > bottom) {
@@ -122,7 +122,7 @@ export function drawReportPdf(doc, tables) {
     doc.setPage(p);
     doc.setFont("helvetica", "normal");
     doc.setFontSize(8);
-    doc.text(`Page ${p} of ${pages}`, right, 820, { align: "right" });
+    doc.text(`${tables.labels?.page || "Page"} ${p} ${tables.labels?.page === "Página" ? "de" : "of"} ${pages}`, right, 820, { align: "right" });
   }
 }
 

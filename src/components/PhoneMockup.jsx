@@ -1,7 +1,9 @@
 import React from "react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 // A CSS-built smartphone mockup showing the FIA'O app interface, matching the hero reference.
 export default function PhoneMockup() {
+    const { t } = useLanguage();
   const debts = [
     { initial: "J", name: "Jonn Perez", amount: "$45.00" },
     { initial: "A", name: "Ana Torres", amount: "$120.00" },
@@ -27,13 +29,13 @@ export default function PhoneMockup() {
              <div className="w-7 h-7 rounded-full bg-white/20 overflow-hidden">
   <img
     src="https://pbs.twimg.com/profile_images/1390905138303234050/_UOSnquT_400x400.jpg"
-    alt="Perfil"
+    alt={t("Profile")}
     className="w-full h-full object-cover"
   />
 </div>
             </div>
-            <p className="text-white text-sm mt-3 font-medium">Good morning, John 👋</p>
-            <p className="text-white/70 text-[11px]">Total balance to collect</p>
+            <p className="text-white text-sm mt-3 font-medium">{t("Good morning, John 👋")}</p>
+            <p className="text-white/70 text-[11px]">{t("Total balance to collect")}</p>
             <p className="text-white font-bold text-2xl mt-0.5" style={{ fontFamily: "Poppins" }}>$1,240.50</p>
           </div>
 
@@ -46,7 +48,7 @@ export default function PhoneMockup() {
                 </div>
                 <div className="flex-1">
                   <p className="text-sm font-semibold" style={{ color: "#2D2926" }}>{d.name}</p>
-                  <p className="text-[11px]" style={{ color: "#9A8F7A" }}>Owes</p>
+                  <p className="text-[11px]" style={{ color: "#9A8F7A" }}>{t("Owes")}</p>
                 </div>
                 <span className="text-sm font-bold" style={{ color: "#B91C1C" }}>{d.amount}</span>
               </div>

@@ -8,12 +8,14 @@ import { fetchLedger } from "@/lib/creditApi";
 import { money, todayPanama, shortYmd } from "@/lib/credit";
 import { PRESETS, presetRange, buildReport, filterLabel, paginate, pageWindow, reportTables } from "@/lib/reports";
 import { exportExcel, exportPdf } from "@/lib/reportExport";
+import { useLanguage } from "@/lib/LanguageContext";
 
 const card = { backgroundColor: "var(--surface)" };
 const fieldStyle = { backgroundColor: "var(--white)", borderColor: "var(--border-cream)", color: "var(--text)" };
 const BREAKDOWN_COLORS = { Paid: "#059669", Pending: "#F9D103", Overdue: "#B91C1C" };
 
 function StatusBadge({ status }) {
+    const { t } = useLanguage();
   const map = {
     Paid: { bg: "var(--ok-bg)", color: "var(--ok-text)" },
     Pending: { bg: "var(--warn-bg)", color: "var(--warn-text)" },
@@ -22,13 +24,14 @@ function StatusBadge({ status }) {
   const s = map[status] || map.Pending;
   return (
     <span className="px-2.5 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: s.bg, color: s.color }}>
-      {status}
+      {t(status)}
     </span>
   );
 }
 
 // Texto del cambio porcentual con color: "good" cuando subir es bueno (cobros) y "bad" cuando subir es malo (deuda).
 function Change({ change, suffix, upIsGood }) {
+    const { t } = useLanguage();
   const { pct, label } = change;
   let color = "var(--text-muted)";
   if (pct === null) color = upIsGood ? "var(--ok-text)" : "var(--bad-text)";
@@ -36,13 +39,14 @@ function Change({ change, suffix, upIsGood }) {
   else if (pct < 0) color = upIsGood ? "var(--bad-text)" : "var(--ok-text)";
   return (
     <p className="text-xs font-semibold mt-1" style={{ color }}>
-      {label}
+      {t(label)}
       {label === "No change" ? "" : ` ${suffix}`}
     </p>
   );
 }
 
 export default function Reports() {
+    const { t, language } = useLanguage();
   const today = todayPanama();
   const initial = presetRange("month", today);
   const [draft, setDraft] = useState({ ...initial, filter: "all" });
@@ -56,8 +60,8 @@ export default function Reports() {
   const clients = data?.clients ?? [];
 
   const report = useMemo(
-    () => (data ? buildReport({ clients: data.clients, entries: data.entries, names: data.names, ...applied, today }) : null),
-    [data, applied, today]
+    () => (data ? buildReport({ clients: data.clients, entries: data.entries, names: data.names, ...applied, today, locale: language === "es" ? "es-PA" : "en-GB" }) : null),
+    [data, applied, today, language]
   );
   const table = useMemo(() => paginate(report?.rows ?? [], page), [report, page]);
 
@@ -84,7 +88,7 @@ export default function Reports() {
     setExportError("");
     setExporting(kind);
     try {
-      const tables = reportTables(report, { filterLabel: filterLabel(clients, applied.filter) });
+      const tables = reportTables(report, { filterLabel: t(filterLabel(clients, applied.filter)), language });
       const name = `fiao-report-${applied.from}-to-${applied.to}`;
       if (kind === "excel") exportExcel(tables, `${name}.xlsx`);
       else await exportPdf(tables, `${name}.pdf`);
@@ -108,25 +112,25 @@ export default function Reports() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8">
             <div>
-              <h1 className="text-white font-bold text-3xl sm:text-4xl" style={{ fontFamily: "Poppins" }}>FIA'O Reports</h1>
+              <h1 className="text-white font-bold text-3xl sm:text-4xl" style={{ fontFamily: "Poppins" }}>{t("FIA'O Reports")}</h1>
               <p className="text-white/80 mt-2 text-sm">
-                Track credit activity, payments and overdue balances for any period.
+                {t("Track credit activity, payments and overdue balances for any period.")}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
               <button onClick={() => run("pdf")} disabled={!canExport}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold disabled:opacity-60" style={{ backgroundColor: "var(--white)", color: "var(--text)" }}>
-                <FileText className="w-4 h-4" /> {exporting === "pdf" ? "Creating..." : "Export PDF"}
+                <FileText className="w-4 h-4" /> {exporting === "pdf" ? t("Creating...") : t("Export PDF")}
               </button>
               <button onClick={() => run("excel")} disabled={!canExport}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold disabled:opacity-60" style={{ backgroundColor: "#F9D103", color: "var(--on-yellow)" }}>
-                <FileSpreadsheet className="w-4 h-4" /> {exporting === "excel" ? "Creating..." : "Export Excel"}
+                <FileSpreadsheet className="w-4 h-4" /> {exporting === "excel" ? t("Creating...") : t("Export Excel")}
               </button>
             </div>
           </div>
 
           {exportError && (
-            <p role="alert" className="text-sm rounded-xl px-4 py-3 mb-4" style={{ backgroundColor: "var(--bad-bg)", color: "var(--bad-text)" }}>{exportError}</p>
+            <p role="alert" className="text-sm rounded-xl px-4 py-3 mb-4" style={{ backgroundColor: "var(--bad-bg)", color: "var(--bad-text)" }}>{t(exportError)}</p>
           )}
 
           {/* Filters */}
@@ -135,83 +139,83 @@ export default function Reports() {
               {PRESETS.map((p) => (
                 <button key={p.key} onClick={() => choosePreset(p.key)} className="px-4 py-1.5 rounded-full text-sm font-semibold"
                   style={{ backgroundColor: activePreset === p.key ? "#B91C1C" : "var(--white)", color: activePreset === p.key ? "#FFFFFF" : "var(--text)", border: "1px solid var(--border-cream)" }}>
-                  {p.label}
+                  {t(p.label)}
                 </button>
               ))}
             </div>
             <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
               <label className="block">
-                <span className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>FROM</span>
+                <span className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>{t("FROM")}</span>
                 <input type="date" max={today} value={draft.from} onChange={(e) => setDraft({ ...draft, from: e.target.value })} className="w-full rounded-xl px-4 py-2.5 text-sm border outline-none" style={fieldStyle} />
               </label>
               <label className="block">
-                <span className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>TO</span>
+                <span className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>{t("TO")}</span>
                 <input type="date" max={today} value={draft.to} onChange={(e) => setDraft({ ...draft, to: e.target.value })} className="w-full rounded-xl px-4 py-2.5 text-sm border outline-none" style={fieldStyle} />
               </label>
               <label className="block">
-                <span className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>CUSTOMERS</span>
+                <span className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>{t("CUSTOMERS")}</span>
                 <select value={draft.filter} onChange={(e) => setDraft({ ...draft, filter: e.target.value })} className="w-full rounded-xl px-4 py-2.5 text-sm border outline-none" style={fieldStyle}>
-                  <option value="all">All customers</option>
-                  <optgroup label="By status">
-                    <option value="status:On Time">On Time</option>
-                    <option value="status:Pending">Pending</option>
-                    <option value="status:Overdue">Overdue</option>
+                  <option value="all">{t("All customers")}</option>
+                  <optgroup label={t("By status")}>
+                    <option value="status:On Time">{t("On Time")}</option>
+                    <option value="status:Pending">{t("Pending")}</option>
+                    <option value="status:Overdue">{t("Overdue")}</option>
                   </optgroup>
-                  <optgroup label="One customer">
+                  <optgroup label={t("One customer")}>
                     {clients.map((cl) => (
                       <option key={cl.id} value={`client:${cl.id}`}>{cl.name}</option>
                     ))}
                   </optgroup>
                 </select>
               </label>
-              <button onClick={apply} className="py-2.5 rounded-full text-sm font-bold text-white" style={{ backgroundColor: "#B91C1C" }}>Apply Filters</button>
+              <button onClick={apply} className="py-2.5 rounded-full text-sm font-bold text-white" style={{ backgroundColor: "#B91C1C" }}>{t("Apply Filters")}</button>
             </div>
-            {formError && <p role="alert" className="text-sm mt-3" style={{ color: "var(--bad-text)" }}>{formError}</p>}
+            {formError && <p role="alert" className="text-sm mt-3" style={{ color: "var(--bad-text)" }}>{t(formError)}</p>}
           </div>
 
           {isLoading ? (
-            <p className="text-center text-white/80 py-16">Loading your reports...</p>
+            <p className="text-center text-white/80 py-16">{t("Loading your reports...")}</p>
           ) : isError ? (
             <div className="text-center py-16">
-              <p className="text-white mb-4">Could not load the data: {error.message}</p>
-              <button onClick={() => refetch()} className="px-5 py-2 rounded-full text-sm font-bold" style={{ backgroundColor: "#F9D103", color: "var(--on-yellow)" }}>Try again</button>
+              <p className="text-white mb-4">{t("Could not load the data:")} {t(error.message)}</p>
+              <button onClick={() => refetch()} className="px-5 py-2 rounded-full text-sm font-bold" style={{ backgroundColor: "#F9D103", color: "var(--on-yellow)" }}>{t("Try again")}</button>
             </div>
           ) : (
             <>
               <p className="text-white/80 text-sm mb-4">
-                {shortYmd(report.range.from)} – {shortYmd(report.range.to)} · {filterLabel(clients, applied.filter)}
+                {shortYmd(report.range.from, language === "es" ? "es-PA" : "en-GB")} – {shortYmd(report.range.to, language === "es" ? "es-PA" : "en-GB")} · {t(filterLabel(clients, applied.filter))}
               </p>
 
               {/* Stat cards */}
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                 <div className="p-4 rounded-2xl" style={card}>
                   <TrendingUp className="w-5 h-5 mb-2" style={{ color: "var(--accent-text)" }} />
-                  <p className="text-[11px] font-semibold tracking-wide" style={{ color: "var(--text-muted)" }}>TOTAL ACTIVE CREDIT</p>
+                  <p className="text-[11px] font-semibold tracking-wide" style={{ color: "var(--text-muted)" }}>{t("TOTAL ACTIVE CREDIT")}</p>
                   <p className="font-bold text-xl" style={{ color: "var(--text)" }}>{money(c.activeCredit)}</p>
-                  <Change change={c.activeCreditChange} suffix="since the start of the period" upIsGood={false} />
+                  <Change change={c.activeCreditChange} suffix={t("since the start of the period")} upIsGood={false} />
                 </div>
                 <div className="p-4 rounded-2xl" style={card}>
                   <Banknote className="w-5 h-5 mb-2" style={{ color: "#059669" }} />
-                  <p className="text-[11px] font-semibold tracking-wide" style={{ color: "var(--text-muted)" }}>COLLECTED IN PERIOD</p>
+                  <p className="text-[11px] font-semibold tracking-wide" style={{ color: "var(--text-muted)" }}>{t("COLLECTED IN PERIOD")}</p>
                   <p className="font-bold text-xl" style={{ color: "var(--text)" }}>{money(c.collected)}</p>
-                  <Change change={c.collectedChange} suffix="vs previous period" upIsGood />
+                  <Change change={c.collectedChange} suffix={t("vs previous period")} upIsGood />
                 </div>
                 <div className="p-4 rounded-2xl" style={card}>
                   <AlertTriangle className="w-5 h-5 mb-2" style={{ color: "var(--accent-text)" }} />
-                  <p className="text-[11px] font-semibold tracking-wide" style={{ color: "var(--text-muted)" }}>PENDING BALANCES</p>
+                  <p className="text-[11px] font-semibold tracking-wide" style={{ color: "var(--text-muted)" }}>{t("PENDING BALANCES")}</p>
                   <p className="font-bold text-xl" style={{ color: "var(--text)" }}>{money(c.pending)}</p>
                   <p className="text-xs font-semibold mt-1" style={{ color: c.overdueCustomers > 0 ? "var(--bad-text)" : "var(--ok-text)" }}>
                     {c.overdueCustomers > 0
-                      ? `${c.overdueCustomers} ${c.overdueCustomers === 1 ? "account" : "accounts"} overdue (${money(c.overdueAmount)})`
-                      : "Nothing overdue"}
+                      ? t(`${c.overdueCustomers} ${c.overdueCustomers === 1 ? "account" : "accounts"} overdue (${money(c.overdueAmount)})`)
+                      : t("Nothing overdue")}
                   </p>
                 </div>
                 <div className="p-4 rounded-2xl" style={card}>
                   <Users className="w-5 h-5 mb-2" style={{ color: "var(--text)" }} />
-                  <p className="text-[11px] font-semibold tracking-wide" style={{ color: "var(--text-muted)" }}>TOTAL CUSTOMERS</p>
+                  <p className="text-[11px] font-semibold tracking-wide" style={{ color: "var(--text-muted)" }}>{t("TOTAL CUSTOMERS")}</p>
                   <p className="font-bold text-xl" style={{ color: "var(--text)" }}>{c.customers}</p>
                   <p className="text-xs font-semibold mt-1" style={{ color: "var(--text-muted)" }}>
-                    {c.newCustomers > 0 ? `+${c.newCustomers} new in this period` : "No new customers"}
+                    {c.newCustomers > 0 ? t(`+${c.newCustomers} new in this period`) : t("No new customers")}
                   </p>
                 </div>
               </div>
@@ -219,8 +223,8 @@ export default function Reports() {
               <div className="grid lg:grid-cols-3 gap-5 mb-6">
                 {/* Chart */}
                 <div className="lg:col-span-2 rounded-2xl p-5" style={card}>
-                  <h2 className="font-bold text-lg mb-1" style={{ color: "var(--text)" }}>Credit activity & payments</h2>
-                  <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>Credit issued, payments received and overdue balances in the period.</p>
+                  <h2 className="font-bold text-lg mb-1" style={{ color: "var(--text)" }}>{t("Credit activity & payments")}</h2>
+                  <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>{t("Credit issued, payments received and overdue balances in the period.")}</p>
                   {hasChartData ? (
                     <div style={{ width: "100%", height: 280 }}>
                       <ResponsiveContainer>
@@ -230,27 +234,27 @@ export default function Reports() {
                           <YAxis tick={{ fill: "var(--text-muted)", fontSize: 11 }} width={48} />
                           <Tooltip formatter={(v) => money(v)} contentStyle={{ backgroundColor: "var(--white)", border: "1px solid var(--border-cream)", borderRadius: 12, color: "var(--text)" }} />
                           <Legend wrapperStyle={{ fontSize: 12 }} />
-                          <Bar dataKey="issued" name="Credit issued" fill="#B91C1C" radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="received" name="Payments received" fill="#F9D103" radius={[4, 4, 0, 0]} />
-                          <Bar dataKey="overdue" name="Overdue" fill="#FCA5A5" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="issued" name={t("Credit issued")} fill="#B91C1C" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="received" name={t("Payments received")} fill="#F9D103" radius={[4, 4, 0, 0]} />
+                          <Bar dataKey="overdue" name={t("Overdue")} fill="#FCA5A5" radius={[4, 4, 0, 0]} />
                         </BarChart>
                       </ResponsiveContainer>
                     </div>
                   ) : (
-                    <p className="py-16 text-center text-sm" style={{ color: "var(--text-faint)" }}>No activity in this period.</p>
+                    <p className="py-16 text-center text-sm" style={{ color: "var(--text-faint)" }}>{t("No activity in this period.")}</p>
                   )}
                 </div>
 
                 {/* Breakdown */}
                 <div className="rounded-2xl p-5" style={card}>
-                  <h2 className="font-bold text-lg mb-1" style={{ color: "var(--text)" }}>Credit status</h2>
-                  <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>What happened to the credit issued in the period ({money(report.issued)}).</p>
+                  <h2 className="font-bold text-lg mb-1" style={{ color: "var(--text)" }}>{t("Credit status")}</h2>
+                  <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>{t("What happened to the credit issued in the period (")}{money(report.issued)}).</p>
                   {report.issued > 0 ? (
                     <div className="space-y-4">
                       {report.breakdown.map((b) => (
                         <div key={b.key}>
                           <div className="flex justify-between text-sm mb-1.5">
-                            <span className="font-semibold" style={{ color: "var(--text)" }}>{b.key}</span>
+                            <span className="font-semibold" style={{ color: "var(--text)" }}>{t(b.key)}</span>
                             <span style={{ color: "var(--text-muted)" }}>{b.pct}% · {money(b.amount)}</span>
                           </div>
                           <div className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--border-cream)" }}>
@@ -260,39 +264,39 @@ export default function Reports() {
                       ))}
                     </div>
                   ) : (
-                    <p className="py-10 text-center text-sm" style={{ color: "var(--text-faint)" }}>No credit issued in this period.</p>
+                    <p className="py-10 text-center text-sm" style={{ color: "var(--text-faint)" }}>{t("No credit issued in this period.")}</p>
                   )}
                 </div>
               </div>
 
               {/* Transactions */}
               <div className="rounded-2xl p-5" style={card}>
-                <h2 className="font-bold text-lg mb-4" style={{ color: "var(--text)" }}>Transactions</h2>
+                <h2 className="font-bold text-lg mb-4" style={{ color: "var(--text)" }}>{t("Transactions")}</h2>
                 {table.total === 0 ? (
-                  <p className="py-8 text-center text-sm" style={{ color: "var(--text-faint)" }}>No transactions in this period.</p>
+                  <p className="py-8 text-center text-sm" style={{ color: "var(--text-faint)" }}>{t("No transactions in this period.")}</p>
                 ) : (
                   <>
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
                           <tr className="text-left text-xs font-semibold tracking-wide" style={{ color: "var(--text-faint)", borderBottom: "1px solid var(--border-cream)" }}>
-                            <th className="pb-3 pr-3">CUSTOMER</th>
-                            <th className="pb-3 pr-3">DESCRIPTION</th>
-                            <th className="pb-3 pr-3">AMOUNT</th>
-                            <th className="pb-3 pr-3">DATE</th>
-                            <th className="pb-3">STATUS</th>
+                            <th className="pb-3 pr-3">{t("CUSTOMER")}</th>
+                            <th className="pb-3 pr-3">{t("DESCRIPTION")}</th>
+                            <th className="pb-3 pr-3">{t("AMOUNT")}</th>
+                            <th className="pb-3 pr-3">{t("DATE")}</th>
+                            <th className="pb-3">{t("STATUS")}</th>
                           </tr>
                         </thead>
                         <tbody>
-                          {table.items.map((t) => (
-                            <tr key={t.id} style={{ borderBottom: "1px solid var(--border-cream)" }}>
-                              <td className="py-3 pr-3 text-sm font-semibold" style={{ color: "var(--text)" }}>{t.name}</td>
-                              <td className="py-3 pr-3 text-sm" style={{ color: "var(--text-muted)" }}>{t.description}</td>
-                              <td className="py-3 pr-3 text-sm font-bold whitespace-nowrap" style={{ color: t.kind === "pago" ? "var(--ok-text)" : "var(--text)" }}>
-                                {t.kind === "pago" ? "− " : ""}{money(t.amount)}
+                          {table.items.map((item) => (
+                            <tr key={item.id} style={{ borderBottom: "1px solid var(--border-cream)" }}>
+                              <td className="py-3 pr-3 text-sm font-semibold" style={{ color: "var(--text)" }}>{item.name}</td>
+                              <td className="py-3 pr-3 text-sm" style={{ color: "var(--text-muted)" }}>{t(item.description)}</td>
+                              <td className="py-3 pr-3 text-sm font-bold whitespace-nowrap" style={{ color: item.kind === "pago" ? "var(--ok-text)" : "var(--text)" }}>
+                                {item.kind === "pago" ? "− " : ""}{money(item.amount)}
                               </td>
-                              <td className="py-3 pr-3 text-sm whitespace-nowrap" style={{ color: "var(--text-muted)" }}>{shortYmd(t.date)}</td>
-                              <td className="py-3"><StatusBadge status={t.status} /></td>
+                              <td className="py-3 pr-3 text-sm whitespace-nowrap" style={{ color: "var(--text-muted)" }}>{shortYmd(item.date, language === "es" ? "es-PA" : "en-GB")}</td>
+                              <td className="py-3"><StatusBadge status={item.status} /></td>
                             </tr>
                           ))}
                         </tbody>
@@ -301,11 +305,11 @@ export default function Reports() {
 
                     <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
                       <p className="text-xs" style={{ color: "var(--text-muted)" }}>
-                        Showing {table.from}–{table.to} of {table.total}
+                        {t("Showing")} {table.from}–{table.to} {t("of")} {table.total}
                       </p>
                       {table.pages > 1 && (
                         <div className="flex items-center gap-1.5">
-                          <button aria-label="Previous page" onClick={() => setPage(table.page - 1)} disabled={table.page === 1}
+                          <button aria-label={t("Previous page")} onClick={() => setPage(table.page - 1)} disabled={table.page === 1}
                             className="w-8 h-8 rounded-full flex items-center justify-center border disabled:opacity-40" style={fieldStyle}>
                             <ChevronLeft className="w-4 h-4" />
                           </button>
@@ -316,7 +320,7 @@ export default function Reports() {
                               {n}
                             </button>
                           ))}
-                          <button aria-label="Next page" onClick={() => setPage(table.page + 1)} disabled={table.page === table.pages}
+                          <button aria-label={t("Next page")} onClick={() => setPage(table.page + 1)} disabled={table.page === table.pages}
                             className="w-8 h-8 rounded-full flex items-center justify-center border disabled:opacity-40" style={fieldStyle}>
                             <ChevronRight className="w-4 h-4" />
                           </button>

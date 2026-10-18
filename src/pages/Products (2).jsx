@@ -10,7 +10,6 @@ import { money, isLowStock, effectiveLimit, addDays, todayPanama, shortYmd } fro
 import {
   UNITS,
   DEFAULT_CATEGORIES,
-  stockLabel,
   formatQty,
   validateProduct,
   parseQty,
@@ -18,6 +17,7 @@ import {
   cartTotal,
   checkSale,
 } from "@/lib/products";
+import { useLanguage } from "@/lib/LanguageContext";
 
 const fieldStyle = { backgroundColor: "var(--white)", borderColor: "var(--border-cream)", color: "var(--text)" };
 const cardStyle = { backgroundColor: "var(--white)", border: "1px solid var(--border-cream)" };
@@ -37,6 +37,7 @@ function ProductImage({ product }) {
 }
 
 function Note({ note }) {
+    const { t } = useLanguage();
   if (!note) return null;
   const ok = note.type === "ok";
   return (
@@ -45,13 +46,14 @@ function Note({ note }) {
       className="text-sm rounded-xl px-3 py-2 mt-3"
       style={{ backgroundColor: ok ? "var(--ok-bg)" : "var(--bad-bg)", color: ok ? "var(--ok-text)" : "var(--bad-text)" }}
     >
-      {note.text}
+      {t(note.text)}
     </p>
   );
 }
 
 // Ventana para crear o editar un producto.
 export function ProductModal({ product, categories, onClose }) {
+    const { t } = useLanguage();
   const queryClient = useQueryClient();
   const isNew = !product;
   const [form, setForm] = useState({
@@ -97,75 +99,75 @@ export function ProductModal({ product, categories, onClose }) {
       <div
         role="dialog"
         aria-modal="true"
-        aria-label={isNew ? "New product" : "Edit product"}
+        aria-label={isNew ? t("New product") : t("Edit product")}
         className="w-full max-w-md rounded-3xl p-6 max-h-[90vh] overflow-y-auto"
         style={{ backgroundColor: "var(--white)", boxShadow: "0 20px 50px rgba(0,0,0,0.35)" }}
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-start justify-between mb-4">
           <h2 className="font-bold text-xl" style={{ color: "var(--text)", fontFamily: "Poppins" }}>
-            {isNew ? "New product" : "Edit product"}
+            {isNew ? t("New product") : t("Edit product")}
           </h2>
-          <button onClick={onClose} aria-label="Close" className="w-8 h-8 rounded-full flex items-center justify-center" style={{ color: "var(--text-muted)" }}>
+          <button onClick={onClose} aria-label={t("Close")} className="w-8 h-8 rounded-full flex items-center justify-center" style={{ color: "var(--text-muted)" }}>
             <X className="w-5 h-5" />
           </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block">
-            <span className={label} style={{ color: "var(--text-muted)" }}>NAME *</span>
-            <input value={form.name} onChange={set("name")} autoFocus placeholder="Rice" className={input} style={fieldStyle} />
+            <span className={label} style={{ color: "var(--text-muted)" }}>{t("NAME *")}</span>
+            <input value={form.name} onChange={set("name")} autoFocus placeholder={t("Rice")} className={input} style={fieldStyle} />
           </label>
           <label className="block">
-            <span className={label} style={{ color: "var(--text-muted)" }}>CATEGORY</span>
-            <input value={form.category} onChange={set("category")} list="product-categories" placeholder="Pantry" className={input} style={fieldStyle} />
+            <span className={label} style={{ color: "var(--text-muted)" }}>{t("CATEGORY")}</span>
+            <input value={form.category} onChange={set("category")} list="product-categories" placeholder={t("Pantry")} className={input} style={fieldStyle} />
             <datalist id="product-categories">
               {categories.map((c) => (
-                <option key={c} value={c} />
+                <option key={c} value={c} label={t(c)} />
               ))}
             </datalist>
           </label>
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
-              <span className={label} style={{ color: "var(--text-muted)" }}>PRICE (B/.) *</span>
+              <span className={label} style={{ color: "var(--text-muted)" }}>{t("PRICE (B/.) *")}</span>
               <input value={form.price} onChange={set("price")} inputMode="decimal" placeholder="0.95" className={input} style={fieldStyle} />
             </label>
             <label className="block">
-              <span className={label} style={{ color: "var(--text-muted)" }}>SOLD BY</span>
+              <span className={label} style={{ color: "var(--text-muted)" }}>{t("SOLD BY")}</span>
               <select value={form.unit} onChange={set("unit")} className={input} style={fieldStyle}>
                 {UNITS.map((u) => (
-                  <option key={u} value={u}>{u}</option>
+                  <option key={u} value={u}>{t(u)}</option>
                 ))}
               </select>
             </label>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <label className="block">
-              <span className={label} style={{ color: "var(--text-muted)" }}>STOCK *</span>
+              <span className={label} style={{ color: "var(--text-muted)" }}>{t("STOCK *")}</span>
               <input value={form.stock} onChange={set("stock")} inputMode="decimal" placeholder="38" className={input} style={fieldStyle} />
             </label>
             <label className="block">
-              <span className={label} style={{ color: "var(--text-muted)" }}>ALERT BELOW</span>
+              <span className={label} style={{ color: "var(--text-muted)" }}>{t("ALERT BELOW")}</span>
               <input value={form.min_stock} onChange={set("min_stock")} inputMode="decimal" placeholder="5" className={input} style={fieldStyle} />
             </label>
           </div>
           <label className="block">
-            <span className={label} style={{ color: "var(--text-muted)" }}>IMAGE LINK (optional)</span>
+            <span className={label} style={{ color: "var(--text-muted)" }}>{t("IMAGE LINK (optional)")}</span>
             <input value={form.image_url} onChange={set("image_url")} placeholder="https://..." className={input} style={fieldStyle} />
           </label>
 
           {error && (
             <p role="alert" className="text-sm rounded-xl px-3 py-2" style={{ backgroundColor: "var(--bad-bg)", color: "var(--bad-text)" }}>
-              {error}
+              {t(error)}
             </p>
           )}
 
           <div className="flex gap-2 pt-1">
             <button type="submit" disabled={save.isPending} className="flex-1 py-3 rounded-full font-bold text-sm text-white disabled:opacity-60" style={{ backgroundColor: "#B91C1C" }}>
-              {save.isPending ? "Saving..." : isNew ? "Add product" : "Save changes"}
+              {save.isPending ? t("Saving...") : isNew ? t("Add product") : t("Save changes")}
             </button>
             <button type="button" onClick={onClose} className="px-5 py-3 rounded-full font-bold text-sm border" style={{ backgroundColor: "var(--white)", color: "var(--text)", borderColor: "var(--border-cream)" }}>
-              Cancel
+              {t("Cancel")}
             </button>
           </div>
         </form>
@@ -176,6 +178,7 @@ export function ProductModal({ product, categories, onClose }) {
 
 // Pestaña "Register Fiado Sale": elegir cliente y productos, y registrar todo en un solo paso.
 export function SaleTab({ products, query, initialCart = {} }) {
+    const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const { data: ledger, isLoading, isError, error, refetch } = useQuery({ queryKey: ["credit"], queryFn: fetchLedger });
   const clients = ledger?.clients ?? [];
@@ -235,29 +238,29 @@ export function SaleTab({ products, query, initialCart = {} }) {
     });
   };
 
-  if (isLoading) return <p className="py-10 text-center text-sm" style={{ color: "var(--text-muted)" }}>Loading...</p>;
+  if (isLoading) return <p className="py-10 text-center text-sm" style={{ color: "var(--text-muted)" }}>{t("Loading...")}</p>;
   if (isError) {
     return (
       <div className="py-10 text-center">
-        <p className="text-sm mb-3" style={{ color: "var(--bad-text)" }}>Could not load customers: {error.message}</p>
-        <button onClick={() => refetch()} className="px-5 py-2 rounded-full text-sm font-bold text-white" style={{ backgroundColor: "#B91C1C" }}>Try again</button>
+        <p className="text-sm mb-3" style={{ color: "var(--bad-text)" }}>{t("Could not load customers:")} {t(error.message)}</p>
+        <button onClick={() => refetch()} className="px-5 py-2 rounded-full text-sm font-bold text-white" style={{ backgroundColor: "#B91C1C" }}>{t("Try again")}</button>
       </div>
     );
   }
   if (clients.length === 0) {
     return (
       <div className="py-10 text-center">
-        <p className="font-bold mb-1" style={{ color: "var(--text)" }}>You need a customer first</p>
-        <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>Register who you sell on credit to.</p>
-        <Link to="/clients" className="inline-block px-5 py-2.5 rounded-full text-sm font-bold" style={{ backgroundColor: "#F9D103", color: "var(--on-yellow)" }}>Go to Clients</Link>
+        <p className="font-bold mb-1" style={{ color: "var(--text)" }}>{t("You need a customer first")}</p>
+        <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>{t("Register who you sell on credit to.")}</p>
+        <Link to="/clients" className="inline-block px-5 py-2.5 rounded-full text-sm font-bold" style={{ backgroundColor: "#F9D103", color: "var(--on-yellow)" }}>{t("Go to Clients")}</Link>
       </div>
     );
   }
   if (products.length === 0) {
     return (
       <div className="py-10 text-center">
-        <p className="font-bold mb-1" style={{ color: "var(--text)" }}>Your inventory is empty</p>
-        <p className="text-sm" style={{ color: "var(--text-muted)" }}>Add products in the Inventory tab, then come back to register a sale.</p>
+        <p className="font-bold mb-1" style={{ color: "var(--text)" }}>{t("Your inventory is empty")}</p>
+        <p className="text-sm" style={{ color: "var(--text-muted)" }}>{t("Add products in the Inventory tab, then come back to register a sale.")}</p>
       </div>
     );
   }
@@ -266,7 +269,7 @@ export function SaleTab({ products, query, initialCart = {} }) {
     <div className="grid lg:grid-cols-3 gap-5">
       {/* Products */}
       <div className="lg:col-span-2 space-y-2">
-        {visible.length === 0 && <p className="py-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>No products match your search.</p>}
+        {visible.length === 0 && <p className="py-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>{t("No products match your search.")}</p>}
         {visible.map((p) => {
           const out = Number(p.stock) <= 0;
           const inCart = lines.find((l) => l.product.id === p.id);
@@ -278,17 +281,17 @@ export function SaleTab({ products, query, initialCart = {} }) {
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>{p.name}</p>
                 <p className="text-xs" style={{ color: out ? "var(--bad-text)" : "var(--text-muted)" }}>
-                  {money(p.price)} · {out ? "Out of stock" : `${stockLabel(p)} left`}
+                  {money(p.price)} · {out ? t("Out of stock") : `${formatQty(p.stock)} ${t(p.unit)} ${t("left")}`}
                 </p>
               </div>
               <div className="flex items-center gap-1.5">
-                <button type="button" aria-label={`Remove one ${p.name}`} disabled={!inCart} onClick={() => bump(p, -1)}
+                <button type="button" aria-label={t(`Remove one ${p.name}`)} disabled={!inCart} onClick={() => bump(p, -1)}
                   className="w-8 h-8 rounded-full flex items-center justify-center border disabled:opacity-40" style={{ ...fieldStyle }}>
                   <Minus className="w-3.5 h-3.5" />
                 </button>
-                <input aria-label={`Quantity of ${p.name}`} value={cart[p.id] ?? ""} onChange={(e) => setQty(p.id, e.target.value)} disabled={out}
+                <input aria-label={t(`Quantity of ${p.name}`)} value={cart[p.id] ?? ""} onChange={(e) => setQty(p.id, e.target.value)} disabled={out}
                   inputMode="decimal" placeholder="0" className="w-14 text-center rounded-lg py-1.5 text-sm font-semibold border outline-none disabled:opacity-40" style={fieldStyle} />
-                <button type="button" aria-label={`Add one ${p.name}`} disabled={out} onClick={() => bump(p, 1)}
+                <button type="button" aria-label={t(`Add one ${p.name}`)} disabled={out} onClick={() => bump(p, 1)}
                   className="w-8 h-8 rounded-full flex items-center justify-center disabled:opacity-40" style={{ backgroundColor: "#F9D103", color: "var(--on-yellow)" }}>
                   <Plus className="w-3.5 h-3.5" />
                 </button>
@@ -300,7 +303,7 @@ export function SaleTab({ products, query, initialCart = {} }) {
 
       {/* Sale summary */}
       <form onSubmit={submit} className="rounded-2xl p-5 h-fit" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border-cream)" }}>
-        <label htmlFor="sale-customer" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>CUSTOMER</label>
+        <label htmlFor="sale-customer" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>{t("CUSTOMER")}</label>
         <select id="sale-customer" value={client.id} onChange={(e) => { setClientId(e.target.value); setMsg(null); }}
           className="w-full rounded-xl px-4 py-2.5 text-sm font-semibold border outline-none mb-2" style={fieldStyle}>
           {clients.map((c) => (
@@ -308,36 +311,36 @@ export function SaleTab({ products, query, initialCart = {} }) {
           ))}
         </select>
         <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>
-          Debt {money(client.balance)} · Limit {money(limit)} · Room left {money(room)}
+          {t("Debt")} {money(client.balance)} {t("· Limit")} {money(limit)} {t("· Room left")} {money(room)}
         </p>
 
-        <h3 className="font-bold text-sm mb-2" style={{ color: "var(--text)" }}>Sale</h3>
+        <h3 className="font-bold text-sm mb-2" style={{ color: "var(--text)" }}>{t("Sale")}</h3>
         {lines.length === 0 ? (
-          <p className="text-sm mb-4" style={{ color: "var(--text-faint)" }}>Add products with the + button.</p>
+          <p className="text-sm mb-4" style={{ color: "var(--text-faint)" }}>{t("Add products with the + button.")}</p>
         ) : (
           <div className="space-y-1.5 mb-3">
             {lines.map((l) => (
               <div key={l.product.id} className="flex justify-between text-sm gap-2" style={{ color: "var(--text)" }}>
-                <span className="truncate">{formatQty(l.qty)} × {l.product.name}</span>
+                <span className="truncate">{formatQty(l.qty)} {t("×")} {l.product.name}</span>
                 <span className="font-semibold">{money(l.lineTotal)}</span>
               </div>
             ))}
           </div>
         )}
         <div className="flex justify-between font-bold text-base pt-3 mb-4" style={{ color: "var(--text)", borderTop: "1px solid var(--border-cream)" }}>
-          <span>Total</span>
+          <span>{t("Total")}</span>
           <span style={{ color: "var(--accent-text)" }}>{money(total)}</span>
         </div>
 
         <label htmlFor="sale-due" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>
-          Due date (empty = {settings.default_due_days} days, {shortYmd(addDays(today, settings.default_due_days))})
+          {t("Due date (empty =")} {settings.default_due_days} {t("days,")} {shortYmd(addDays(today, settings.default_due_days), language === "es" ? "es-PA" : "en-GB")})
         </label>
         <input id="sale-due" type="date" min={today} value={due} onChange={(e) => setDue(e.target.value)} className="w-full rounded-xl px-4 py-2.5 text-sm border outline-none mb-3" style={fieldStyle} />
-        <label htmlFor="sale-note" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>Note (optional)</label>
-        <input id="sale-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder="Picked up by his son" className="w-full rounded-xl px-4 py-2.5 text-sm border outline-none mb-4" style={fieldStyle} />
+        <label htmlFor="sale-note" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>{t("Note (optional)")}</label>
+        <input id="sale-note" value={note} onChange={(e) => setNote(e.target.value)} placeholder={t("Picked up by his son")} className="w-full rounded-xl px-4 py-2.5 text-sm border outline-none mb-4" style={fieldStyle} />
 
         <button type="submit" disabled={sale.isPending} className="w-full py-3 rounded-full font-bold text-sm text-white disabled:opacity-60" style={{ backgroundColor: "#B91C1C" }}>
-          {sale.isPending ? "Saving..." : "Register Fiado Sale"}
+          {sale.isPending ? t("Saving...") : t("Register Fiado Sale")}
         </button>
         <Note note={msg} />
       </form>
@@ -346,6 +349,7 @@ export function SaleTab({ products, query, initialCart = {} }) {
 }
 
 export default function Products({ initialTab = "Inventory" }) {
+    const { t } = useLanguage();
   const queryClient = useQueryClient();
   const [tab, setTab] = useState(initialTab);
   const [query, setQuery] = useState("");
@@ -406,19 +410,19 @@ export default function Products({ initialTab = "Inventory" }) {
               <input
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                placeholder="Search products..."
+                placeholder={t("Search products...")}
                 className="w-full rounded-full pl-11 pr-4 py-2.5 text-sm border outline-none"
                 style={fieldStyle}
               />
             </div>
 
             <h1 className="font-bold text-3xl sm:text-4xl mb-2" style={{ color: "var(--text)", fontFamily: "Poppins" }}>
-              {tab === "Inventory" ? "Your inventory, always exact" : "Register a fiado sale"}
+              {tab === "Inventory" ? t("Your inventory, always exact") : t("Register a fiado sale")}
             </h1>
             <p className="text-sm mb-6" style={{ color: "var(--text-muted)" }}>
               {tab === "Inventory"
-                ? "Add, edit and track your products. Use the search bar to look up items."
-                : "Pick the customer and the products. The debt is registered and your stock goes down automatically."}
+                ? t("Add, edit and track your products. Use the search bar to look up items.")
+                : t("Pick the customer and the products. The debt is registered and your stock goes down automatically.")}
             </p>
 
             {actionError && (
@@ -428,11 +432,11 @@ export default function Products({ initialTab = "Inventory" }) {
             )}
 
             {isLoading ? (
-              <p className="py-10 text-center text-sm" style={{ color: "var(--text-muted)" }}>Loading products...</p>
+              <p className="py-10 text-center text-sm" style={{ color: "var(--text-muted)" }}>{t("Loading products...")}</p>
             ) : isError ? (
               <div className="py-10 text-center">
-                <p className="text-sm mb-3" style={{ color: "var(--bad-text)" }}>Could not load products: {error.message}</p>
-                <button onClick={() => refetch()} className="px-5 py-2 rounded-full text-sm font-bold text-white" style={{ backgroundColor: "#B91C1C" }}>Try again</button>
+                <p className="text-sm mb-3" style={{ color: "var(--bad-text)" }}>{t("Could not load products:")} {t(error.message)}</p>
+                <button onClick={() => refetch()} className="px-5 py-2 rounded-full text-sm font-bold text-white" style={{ backgroundColor: "#B91C1C" }}>{t("Try again")}</button>
               </div>
             ) : tab === "Fiado" ? (
               <SaleTab products={products} query={query} />
@@ -443,16 +447,16 @@ export default function Products({ initialTab = "Inventory" }) {
                   <div className="flex items-center gap-3 p-4 rounded-xl mb-6" style={{ backgroundColor: "var(--warn-bg)", border: "1px solid #F9D103" }}>
                     <Bell className="w-5 h-5 flex-shrink-0" style={{ color: "var(--warn-text)" }} />
                     <p className="text-sm" style={{ color: "var(--warn-text)" }}>
-                      <span className="font-bold">Inventory Alert:</span>{" "}
-                      {lowStock.length} {lowStock.length === 1 ? "product is" : "products are"} running low or out of stock:{" "}
+                      <span className="font-bold">{t("Inventory Alert:")}</span>{" "}
+                      {lowStock.length} {lowStock.length === 1 ? t("product is") : t("products are")} {t("running low or out of stock:")}{" "}
                       {lowStock.slice(0, 4).map((p) => p.name).join(", ")}
-                      {lowStock.length > 4 ? ` and ${lowStock.length - 4} more` : ""}.
+                      {lowStock.length > 4 ? ` ${t(`and ${lowStock.length - 4} more`)}` : ""}.
                     </p>
                   </div>
                 )}
 
                 {products.length > 0 && filtered.length === 0 && (
-                  <p className="pb-6 text-sm" style={{ color: "var(--text-muted)" }}>No products match your search.</p>
+                  <p className="pb-6 text-sm" style={{ color: "var(--text-muted)" }}>{t("No products match your search.")}</p>
                 )}
 
                 {/* Grid */}
@@ -467,23 +471,23 @@ export default function Products({ initialTab = "Inventory" }) {
                         <div className="p-4">
                           {p.category && (
                             <span className="inline-block px-2.5 py-0.5 rounded-full text-xs font-semibold mb-2" style={{ backgroundColor: "#F9D103", color: "var(--on-yellow)" }}>
-                              {p.category}
+                              {t(p.category)}
                             </span>
                           )}
                           <h3 className="font-bold text-sm mb-0.5" style={{ color: "var(--text)" }}>{p.name}</h3>
                           <p className="font-bold text-base mb-1" style={{ color: "var(--accent-text)" }}>{money(p.price)}</p>
                           <p className="text-xs mb-3" style={{ color: low ? "var(--bad-text)" : "var(--text-muted)" }}>
-                            Stock: {stockLabel(p)}
-                            {low ? (Number(p.stock) <= 0 ? " · Out of stock" : " · Running low") : ""}
+                            {t("Stock:")} {formatQty(p.stock)} {t(p.unit)}
+                            {low ? (Number(p.stock) <= 0 ? t(" · Out of stock") : t(" · Running low")) : ""}
                           </p>
                           <div className="flex gap-2">
                             <button onClick={() => setModal({ product: p })} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold"
                               style={{ backgroundColor: "var(--surface)", color: "var(--text)", border: "1px solid var(--border-cream)" }}>
-                              <Pencil className="w-3 h-3" /> Edit
+                              <Pencil className="w-3 h-3" /> {t("Edit")}
                             </button>
                             <button onClick={() => remove(p)} disabled={archive.isPending} className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-xs font-semibold disabled:opacity-60"
                               style={{ backgroundColor: "var(--bad-bg)", color: "var(--bad-text)" }}>
-                              <Trash2 className="w-3 h-3" /> Remove
+                              <Trash2 className="w-3 h-3" /> {t("Remove")}
                             </button>
                           </div>
                         </div>
@@ -496,18 +500,18 @@ export default function Products({ initialTab = "Inventory" }) {
                     <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3" style={{ backgroundColor: "#F9D103" }}>
                       <Plus className="w-6 h-6" style={{ color: "var(--on-yellow)" }} />
                     </div>
-                    <p className="font-bold text-sm" style={{ color: "var(--text)" }}>Add New Product</p>
+                    <p className="font-bold text-sm" style={{ color: "var(--text)" }}>{t("Add New Product")}</p>
                     <p className="text-xs mt-1" style={{ color: "var(--text-muted)" }}>
-                      {products.length === 0 ? "Your inventory is empty. Start here." : "Create a new item"}
+                      {products.length === 0 ? t("Your inventory is empty. Start here.") : t("Create a new item")}
                     </p>
                   </button>
                 </div>
 
                 {/* Digital catalog note */}
                 <div className="mt-8 p-5 rounded-2xl" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border-cream)" }}>
-                  <h3 className="font-bold text-base mb-1" style={{ color: "var(--text)" }}>Digital Catalog</h3>
+                  <h3 className="font-bold text-base mb-1" style={{ color: "var(--text)" }}>{t("Digital Catalog")}</h3>
                   <p className="text-sm" style={{ color: "var(--text-muted)" }}>
-                    Coming soon: share your products in a digital catalog so customers can see what's available — no more printed lists or outdated price tags.
+                    {t("Coming soon: share your products in a digital catalog so customers can see what's available — no more printed lists or outdated price tags.")}
                   </p>
                 </div>
               </>

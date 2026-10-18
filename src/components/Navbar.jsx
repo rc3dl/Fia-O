@@ -3,23 +3,25 @@ import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Moon, Sun, UserCircle } from "lucide-react";
 import { useTheme } from "@/lib/ThemeContext";
 import { useAuth } from "@/lib/AuthContext";
+import { useLanguage } from "@/lib/LanguageContext";
 import NotificationBell from "@/components/NotificationBell";
 
 const NAV_ITEMS = [
-  { label: "Home", path: "/", authPath: "/dashboard" },
-  { label: "Credit", path: "/credit", authPath: "/credit" },
-  { label: "Products", path: "/products", authPath: "/products" },
-  { label: "Clients", path: "/clients", authPath: "/clients" },
-  { label: "Reports", path: "/reports", authPath: "/reports" },
-  { label: "Contact", path: "/contact", authPath: "/contact" },
+  { key: "home", path: "/", authPath: "/dashboard" },
+  { key: "credit", path: "/credit", authPath: "/credit" },
+  { key: "products", path: "/products", authPath: "/products" },
+  { key: "clients", path: "/clients", authPath: "/clients" },
+  { key: "reports", path: "/reports", authPath: "/reports" },
+  { key: "contact", path: "/contact", authPath: "/contact" },
 ];
 
 function Logo() {
+    const { t } = useLanguage();
   return (
     <Link
       to="/"
       className="flex items-center select-none"
-      aria-label="FIA'O, inicio"
+      aria-label={t("FIA'O, inicio")}
     >
       <img
         src="/Logo-fiao-120x40.svg"
@@ -35,6 +37,7 @@ export default function Navbar() {
   const location = useLocation();
   const { isAuthenticated } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+  const { language, toggleLanguage, t } = useLanguage();
 
   const homePath = isAuthenticated ? "/dashboard" : "/";
 
@@ -60,7 +63,7 @@ export default function Navbar() {
               <div className="hidden lg:flex items-center gap-1.5">
                 {NAV_ITEMS.map((item) => {
                   const target =
-                    item.label === "Home" ? homePath : item.path;
+                    item.key === "home" ? homePath : item.path;
                   const active = location.pathname === target;
 
                   return (
@@ -75,7 +78,7 @@ export default function Navbar() {
                         color: active ? "#2D2926" : "#FFFFFF",
                       }}
                     >
-                      {item.label}
+                      {t(`nav.${item.key}`)}
                     </Link>
                   );
                 })}
@@ -83,13 +86,16 @@ export default function Navbar() {
 
               {/* Desktop actions */}
               <div className="hidden lg:flex items-center gap-2">
+                <button type="button" onClick={toggleLanguage} className="min-w-10 h-8 px-2 rounded-full flex items-center justify-center text-xs font-bold text-white border border-white/30 hover:bg-white/10 transition" aria-label={t("nav.language")} title={t("nav.language")}>
+                  {language === "es" ? t("ESP") : t("ENG")}
+                </button>
                 <NotificationBell />
 
                 <button
                   type="button"
                   onClick={toggleTheme}
                   className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition"
-                  aria-label="Toggle dark mode"
+                  aria-label={t("nav.toggleTheme")}
                 >
                   {isDark ? (
                     <Sun className="w-4 h-4 text-white" />
@@ -101,7 +107,7 @@ export default function Navbar() {
                 <Link
                   to="/profile"
                   className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition"
-                  aria-label="Profile"
+                  aria-label={t("Profile")}
                 >
                   <UserCircle className="w-5 h-5 text-white" />
                 </Link>
@@ -109,13 +115,16 @@ export default function Navbar() {
 
               {/* Mobile notifications and menu */}
               <div className="lg:hidden flex items-center gap-1">
+                <button type="button" onClick={toggleLanguage} className="h-9 min-w-10 px-2 rounded-full flex items-center justify-center text-xs font-bold text-white border border-white/30" aria-label={t("nav.language")} title={t("nav.language")}>
+                  {language === "es" ? t("ESP") : t("ENG")}
+                </button>
                 <NotificationBell />
 
                 <button
                   type="button"
                   className="w-9 h-9 rounded-full flex items-center justify-center text-white"
                   onClick={() => setOpen(!open)}
-                  aria-label="Toggle menu"
+                  aria-label={t("nav.toggleMenu")}
                   aria-expanded={open}
                 >
                   {open ? (
@@ -127,6 +136,10 @@ export default function Navbar() {
               </div>
             </>
           ) : (
+            <div className="flex items-center gap-2">
+            <button type="button" onClick={toggleLanguage} className="min-w-10 h-9 px-2 rounded-full flex items-center justify-center text-xs font-bold border border-white/30 text-white hover:bg-white/10 transition" aria-label={t("nav.language")} title={t("nav.language")}>
+              {language === "es" ? t("ESP") : t("ENG")}
+            </button>
             <Link
               to="/login"
               className="px-5 py-2 rounded-full text-sm font-semibold transition-all"
@@ -135,8 +148,9 @@ export default function Navbar() {
                 color: "#2D2926",
               }}
             >
-              Log in
+              {t("nav.login")}
             </Link>
+            </div>
           )}
         </nav>
 
@@ -148,7 +162,7 @@ export default function Navbar() {
           >
             {NAV_ITEMS.map((item) => {
               const target =
-                item.label === "Home" ? homePath : item.path;
+                item.key === "home" ? homePath : item.path;
               const active = location.pathname === target;
 
               return (
@@ -164,10 +178,15 @@ export default function Navbar() {
                     color: active ? "#2D2926" : "#FFFFFF",
                   }}
                 >
-                  {item.label}
+                  {t(`nav.${item.key}`)}
                 </Link>
               );
             })}
+
+            {/* Language selector on mobile */}
+            <button type="button" onClick={() => { toggleLanguage(); setOpen(false); }} className="px-4 py-2.5 rounded-full text-sm font-semibold flex items-center justify-center gap-2 text-white hover:bg-white/10 transition" aria-label={t("nav.language")}>
+              {language === "es" ? t("ESP · Español") : t("ENG · English")}
+            </button>
 
             {/* Profile link */}
             <Link
@@ -186,7 +205,7 @@ export default function Navbar() {
               }}
             >
               <UserCircle className="w-4 h-4" />
-              Profile
+              {t("nav.profile")}
             </Link>
 
             {/* Theme toggle on mobile */}
@@ -194,17 +213,17 @@ export default function Navbar() {
               type="button"
               onClick={toggleTheme}
               className="px-4 py-2.5 rounded-full text-sm font-semibold flex items-center justify-center gap-2 text-white hover:bg-white/10 transition"
-              aria-label="Toggle dark mode"
+              aria-label={t("nav.toggleTheme")}
             >
               {isDark ? (
                 <>
                   <Sun className="w-4 h-4" />
-                  Light mode
+                  {t("nav.lightMode")}
                 </>
               ) : (
                 <>
                   <Moon className="w-4 h-4" />
-                  Dark mode
+                  {t("nav.darkMode")}
                 </>
               )}
             </button>

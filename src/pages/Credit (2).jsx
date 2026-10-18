@@ -20,8 +20,10 @@ import {
   summarize,
   percentUsed,
 } from "@/lib/credit";
+import { useLanguage } from "@/lib/LanguageContext";
 
 function StatusBadge({ status }) {
+    const { t } = useLanguage();
   const map = {
     Paid: { bg: "var(--ok-bg)", color: "var(--ok-text)" },
     Pending: { bg: "var(--warn-bg)", color: "var(--warn-text)" },
@@ -30,13 +32,14 @@ function StatusBadge({ status }) {
   const s = map[status] || map.Pending;
   return (
     <span className="px-2.5 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: s.bg, color: s.color }}>
-      {status}
+      {t(status)}
     </span>
   );
 }
 
 // Mensaje de éxito o de error debajo de un formulario.
 function Note({ note }) {
+    const { t } = useLanguage();
   if (!note) return null;
   const ok = note.type === "ok";
   return (
@@ -45,7 +48,7 @@ function Note({ note }) {
       className="text-sm rounded-xl px-3 py-2 mt-3"
       style={{ backgroundColor: ok ? "var(--ok-bg)" : "var(--bad-bg)", color: ok ? "var(--ok-text)" : "var(--bad-text)" }}
     >
-      {note.text}
+      {note.textKey ? t(note.textKey, note.vars) : t(note.text)}
     </p>
   );
 }
@@ -53,6 +56,7 @@ function Note({ note }) {
 const fieldStyle = { backgroundColor: "var(--white)", borderColor: "var(--border-cream)", color: "var(--text)" };
 
 export default function Credit() {
+    const { t, language } = useLanguage();
   const queryClient = useQueryClient();
   const { data, isLoading, isError, error, refetch } = useQuery({ queryKey: ["credit"], queryFn: fetchLedger });
 
@@ -142,7 +146,7 @@ export default function Credit() {
   const markAsPaid = () => {
     setPayNote(null);
     if (!(client.balance > 0)) return setPayNote({ type: "error", text: "This customer has no debt." });
-    if (window.confirm(`Mark ${client.name} as paid? This registers a payment of ${money(client.balance)}.`)) {
+    if (window.confirm(t(`Mark ${client.name} as paid? This registers a payment of ${money(client.balance)}.`))) {
       payMut.mutate({ client_id: client.id, amount: client.balance, description: "Marked as paid" });
     }
   };
@@ -157,28 +161,28 @@ export default function Credit() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-8">
           <div className="text-center mb-8">
             <h1 className="text-white font-bold text-3xl sm:text-4xl" style={{ fontFamily: "Poppins" }}>
-              Debts & Payments
+              {t("Debts & Payments")}
             </h1>
-            <p className="text-white/80 mt-2">Track all purchases and payments for every customer.</p>
+            <p className="text-white/80 mt-2">{t("Track all purchases and payments for every customer.")}</p>
           </div>
 
           {isLoading ? (
-            <p className="text-center text-white/80 py-16">Loading your notebook...</p>
+            <p className="text-center text-white/80 py-16">{t("Loading your notebook...")}</p>
           ) : isError ? (
             <div className="text-center py-16">
-              <p className="text-white mb-4">Could not load the data: {error.message}</p>
+              <p className="text-white mb-4">{t("Could not load the data:")} {t(error.message)}</p>
               <button onClick={() => refetch()} className="px-5 py-2 rounded-full text-sm font-bold" style={{ backgroundColor: "#F9D103", color: "var(--on-yellow)" }}>
-                Try again
+                {t("Try again")}
               </button>
             </div>
           ) : !client ? (
             <div className="max-w-md mx-auto rounded-2xl p-8 text-center" style={card}>
-              <h2 className="font-bold text-lg mb-2" style={{ color: "var(--text)" }}>No customers yet</h2>
+              <h2 className="font-bold text-lg mb-2" style={{ color: "var(--text)" }}>{t("No customers yet")}</h2>
               <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
-                Add your first customer to start registering credits and payments.
+                {t("Add your first customer to start registering credits and payments.")}
               </p>
               <Link to="/clients" className="inline-block px-5 py-2.5 rounded-full text-sm font-bold" style={{ backgroundColor: "#F9D103", color: "var(--on-yellow)" }}>
-                Go to Clients
+                {t("Go to Clients")}
               </Link>
             </div>
           ) : (
@@ -186,7 +190,7 @@ export default function Credit() {
               {/* Column 1 - Customer */}
               <div className="space-y-5">
                 <div className="rounded-2xl p-5" style={card}>
-                  <label htmlFor="customer" className="text-xs font-semibold tracking-wide block mb-2" style={{ color: "var(--text-muted)" }}>SELECT A CUSTOMER</label>
+                  <label htmlFor="customer" className="text-xs font-semibold tracking-wide block mb-2" style={{ color: "var(--text-muted)" }}>{t("SELECT A CUSTOMER")}</label>
                   <div className="relative">
                     <select
                       id="customer"
@@ -207,24 +211,24 @@ export default function Credit() {
                   <h2 className="font-bold text-xl mb-4" style={{ color: "var(--text)" }}>{client.name}</h2>
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     <div className="rounded-xl p-3" style={{ backgroundColor: "var(--white)", border: "1px solid var(--border-cream)" }}>
-                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>Current Debt</p>
+                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>{t("Current Debt")}</p>
                       <p className="font-bold text-lg" style={{ color: client.balance > 0 ? "var(--accent-text)" : "var(--text)" }}>{money(client.balance)}</p>
                     </div>
                     <div className="rounded-xl p-3" style={{ backgroundColor: "var(--white)", border: "1px solid var(--border-cream)" }}>
-                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>Credit Limit</p>
+                      <p className="text-xs" style={{ color: "var(--text-muted)" }}>{t("Credit Limit")}</p>
                       <p className="font-bold text-lg" style={{ color: "var(--text)" }}>{money(limit)}</p>
                     </div>
                   </div>
                   <div className="mb-1.5 flex justify-between text-xs" style={{ color: "var(--text-muted)" }}>
-                    <span>{used}% used</span>
-                    <span>Limit: {money(limit)}</span>
+                    <span>{used}{t("% used")}</span>
+                    <span>{t("Limit:")} {money(limit)}</span>
                   </div>
                   <div className="h-2.5 rounded-full overflow-hidden" style={{ backgroundColor: "var(--border-cream)" }}>
                     <div className="h-full rounded-full" style={{ width: `${used}%`, backgroundColor: "#B91C1C" }} />
                   </div>
                   {client.overdue > 0 && (
                     <p className="text-xs font-semibold mt-3" style={{ color: "var(--bad-text)" }}>
-                      {money(client.overdue)} is overdue.
+                      {money(client.overdue)} {t("is overdue.")}
                     </p>
                   )}
                 </div>
@@ -232,15 +236,15 @@ export default function Credit() {
                 <div className="rounded-2xl p-5" style={card}>
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <h3 className="font-semibold text-sm mb-1" style={{ color: "var(--text)" }}>Automatic Blocking</h3>
+                      <h3 className="font-semibold text-sm mb-1" style={{ color: "var(--text)" }}>{t("Automatic Blocking")}</h3>
                       <p className="text-xs leading-relaxed" style={{ color: "var(--text-muted)" }}>
-                        If a customer exceeds the debt limit, system prevents new credits.
+                        {t("If a customer exceeds the debt limit, system prevents new credits.")}
                       </p>
                     </div>
                     <button
                       role="switch"
                       aria-checked={settings.auto_block}
-                      aria-label="Automatic blocking"
+                      aria-label={t("Automatic blocking")}
                       disabled={blockMut.isPending}
                       onClick={() => blockMut.mutate(!settings.auto_block)}
                       className="relative w-11 h-6 rounded-full flex-shrink-0 transition-colors disabled:opacity-60"
@@ -255,10 +259,10 @@ export default function Credit() {
               {/* Column 2 - Debt & Payment */}
               <div className="space-y-5">
                 <div className="rounded-2xl p-5" style={card}>
-                  <h2 className="font-bold text-lg mb-1" style={{ color: "var(--text)" }}>Debt History</h2>
-                  <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>Track all purchases and payments.</p>
+                  <h2 className="font-bold text-lg mb-1" style={{ color: "var(--text)" }}>{t("Debt History")}</h2>
+                  <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>{t("Track all purchases and payments.")}</p>
                   {history.length === 0 ? (
-                    <p className="text-sm py-4 text-center" style={{ color: "var(--text-faint)" }}>No movements yet for {client.name}.</p>
+                    <p className="text-sm py-4 text-center" style={{ color: "var(--text-faint)" }}>{t("No movements yet for")} {client.name}.</p>
                   ) : (
                     <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
                       {visibleHistory.map((row) => {
@@ -266,16 +270,16 @@ export default function Credit() {
                         const Icon = isPayment ? Banknote : ShoppingCart;
                         return (
                           <div key={row.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: "var(--white)", border: "1px solid var(--border-cream)" }}>
-                            <span className="text-xs font-semibold w-14" style={{ color: "var(--text-muted)" }}>{shortDate(row.created_at)}</span>
+                            <span className="text-xs font-semibold w-14" style={{ color: "var(--text-muted)" }}>{shortDate(row.created_at, language === "es" ? "es-PA" : "en-GB")}</span>
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: isPayment ? "var(--ok-bg)" : "var(--warn-bg)" }}>
                               <Icon className="w-4 h-4" style={{ color: isPayment ? "var(--ok-text)" : "var(--warn-text)" }} />
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="text-sm font-medium truncate" style={{ color: "var(--text)" }}>
-                                {row.description || (isPayment ? "Payment" : "Credit sale")}
+                                {row.description || (isPayment ? t("Payment") : t("Credit sale"))}
                               </p>
                               {!isPayment && row.due_date && row.status !== "Paid" && (
-                                <p className="text-[11px]" style={{ color: "var(--text-faint)" }}>Due {shortYmd(row.due_date)}</p>
+                                <p className="text-[11px]" style={{ color: "var(--text-faint)" }}>{t("Due")} {shortYmd(row.due_date, language === "es" ? "es-PA" : "en-GB")}</p>
                               )}
                             </div>
                             <span className="text-sm font-bold" style={{ color: isPayment ? "var(--ok-text)" : "var(--text)" }}>
@@ -289,35 +293,35 @@ export default function Credit() {
                   )}
                   {history.length > 8 && (
                     <button onClick={() => setShowAll(!showAll)} className="mt-3 text-sm font-semibold" style={{ color: "var(--accent-text)" }}>
-                      {showAll ? "Show less" : `View Full History (${history.length})`}
+                      {showAll ? t("Show less") : t(`View Full History (${history.length})`)}
                     </button>
                   )}
                 </div>
 
                 {/* New credit */}
                 <form onSubmit={submitFiado} className="rounded-2xl p-5" style={card}>
-                  <h2 className="font-bold text-lg mb-4" style={{ color: "var(--text)" }}>New Credit (Fiado)</h2>
-                  <label htmlFor="fiado-amount" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>Amount (B/.)</label>
+                  <h2 className="font-bold text-lg mb-4" style={{ color: "var(--text)" }}>{t("New Credit (Fiado)")}</h2>
+                  <label htmlFor="fiado-amount" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>{t("Amount (B/.)")}</label>
                   <input id="fiado-amount" value={fiadoAmount} onChange={(e) => setFiadoAmount(e.target.value)} inputMode="decimal" placeholder="0.00"
                     className="w-full rounded-xl px-4 py-3 text-sm font-semibold border outline-none mb-3" style={fieldStyle} />
-                  <label htmlFor="fiado-desc" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>What did they take? (optional)</label>
-                  <input id="fiado-desc" value={fiadoDesc} onChange={(e) => setFiadoDesc(e.target.value)} placeholder="Rice 5 lb, milk 2"
+                  <label htmlFor="fiado-desc" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>{t("What did they take? (optional)")}</label>
+                  <input id="fiado-desc" value={fiadoDesc} onChange={(e) => setFiadoDesc(e.target.value)} placeholder={t("Rice 5 lb, milk 2")}
                     className="w-full rounded-xl px-4 py-3 text-sm border outline-none mb-3" style={fieldStyle} />
                   <label htmlFor="fiado-due" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>
-                    Due date (empty = {settings.default_due_days} days, {shortYmd(defaultDue)})
+                    {t("Due date (empty =")} {settings.default_due_days} {t("days,")} {shortYmd(defaultDue, language === "es" ? "es-PA" : "en-GB")})
                   </label>
                   <input id="fiado-due" type="date" min={today} value={fiadoDue} onChange={(e) => setFiadoDue(e.target.value)}
                     className="w-full rounded-xl px-4 py-3 text-sm border outline-none mb-4" style={fieldStyle} />
                   <button type="submit" disabled={fiadoMut.isPending} className="w-full py-3 rounded-full font-bold text-sm text-white disabled:opacity-60" style={{ backgroundColor: "#B91C1C" }}>
-                    {fiadoMut.isPending ? "Saving..." : "Register Credit"}
+                    {fiadoMut.isPending ? t("Saving...") : t("Register Credit")}
                   </button>
                   <Note note={fiadoNote} />
                 </form>
 
                 {/* Register payment */}
                 <div className="rounded-2xl p-5" style={card}>
-                  <h2 className="font-bold text-lg mb-4" style={{ color: "var(--text)" }}>Register Payment</h2>
-                  <label htmlFor="pay-amount" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>Payment Amount (B/.)</label>
+                  <h2 className="font-bold text-lg mb-4" style={{ color: "var(--text)" }}>{t("Register Payment")}</h2>
+                  <label htmlFor="pay-amount" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>{t("Payment Amount (B/.)")}</label>
                   <input
                     id="pay-amount"
                     value={paymentType === "full" ? client.balance.toFixed(2) : paymentAmount}
@@ -328,7 +332,7 @@ export default function Credit() {
                     className="w-full rounded-xl px-4 py-3 text-sm font-semibold border outline-none mb-4"
                     style={fieldStyle}
                   />
-                  <p className="text-xs font-semibold block mb-2" style={{ color: "var(--text-muted)" }}>Payment Type</p>
+                  <p className="text-xs font-semibold block mb-2" style={{ color: "var(--text-muted)" }}>{t("Payment Type")}</p>
                   <div className="grid grid-cols-2 gap-2 mb-4">
                     {[
                       { key: "partial", label: "Partial Payment" },
@@ -348,23 +352,23 @@ export default function Credit() {
                         <span className="w-4 h-4 rounded-full border-2 flex items-center justify-center" style={{ borderColor: paymentType === opt.key ? "#B91C1C" : "var(--border-cream)" }}>
                           {paymentType === opt.key && <span className="w-2 h-2 rounded-full" style={{ backgroundColor: "#B91C1C" }} />}
                         </span>
-                        {opt.label}
+                        {t(opt.label)}
                       </button>
                     ))}
                   </div>
                   <div className="flex gap-2">
                     <button onClick={submitPayment} disabled={payMut.isPending || !(client.balance > 0)}
                       className="flex-1 py-3 rounded-full font-bold text-sm disabled:opacity-50" style={{ backgroundColor: "#F9D103", color: "var(--on-yellow)" }}>
-                      {payMut.isPending ? "Saving..." : "Register Payment"}
+                      {payMut.isPending ? t("Saving...") : t("Register Payment")}
                     </button>
                     <button onClick={markAsPaid} disabled={payMut.isPending || !(client.balance > 0)}
                       className="flex-1 py-3 rounded-full font-bold text-sm border disabled:opacity-50"
                       style={{ backgroundColor: "var(--white)", color: "var(--text)", borderColor: "var(--border-cream)" }}>
-                      Mark as Paid
+                      {t("Mark as Paid")}
                     </button>
                   </div>
                   {!(client.balance > 0) && (
-                    <p className="text-xs mt-3" style={{ color: "var(--text-faint)" }}>{client.name} has no debt right now.</p>
+                    <p className="text-xs mt-3" style={{ color: "var(--text-faint)" }}>{client.name} {t("has no debt right now.")}</p>
                   )}
                   <Note note={payNote} />
                 </div>
@@ -373,17 +377,17 @@ export default function Credit() {
               {/* Column 3 - Activity & Overview */}
               <div className="space-y-5">
                 <div className="rounded-2xl p-5" style={card}>
-                  <h2 className="font-bold text-lg mb-4" style={{ color: "var(--text)" }}>Recent Activity</h2>
+                  <h2 className="font-bold text-lg mb-4" style={{ color: "var(--text)" }}>{t("Recent Activity")}</h2>
                   {entries.length === 0 ? (
-                    <p className="text-sm" style={{ color: "var(--text-faint)" }}>No activity yet.</p>
+                    <p className="text-sm" style={{ color: "var(--text-faint)" }}>{t("No activity yet.")}</p>
                   ) : (
                     <div className="space-y-2">
                       {entries.slice(0, 6).map((a) => (
                         <div key={a.id} className="p-3 rounded-xl" style={{ backgroundColor: "var(--white)", border: "1px solid var(--border-cream)" }}>
                           <p className="text-sm font-medium" style={{ color: "var(--text)" }}>
-                            {names[a.client_id] || "Client"}, {a.kind === "pago" ? "Paid" : "New debt"} {money(a.amount)}
+                            {names[a.client_id] || t("Client")}, {a.kind === "pago" ? t("Paid") : t("New debt")} {money(a.amount)}
                           </p>
-                          <p className="text-xs mt-0.5" style={{ color: "var(--text-faint)" }}>{relativeDay(a.created_at, today)}</p>
+                          <p className="text-xs mt-0.5" style={{ color: "var(--text-faint)" }}>{t(relativeDay(a.created_at, today, language === "es" ? "es-PA" : "en-GB"))}</p>
                         </div>
                       ))}
                     </div>
@@ -391,7 +395,7 @@ export default function Credit() {
                 </div>
 
                 <div className="rounded-2xl p-5" style={card}>
-                  <h2 className="font-bold text-lg mb-4" style={{ color: "var(--text)" }}>Debt Overview</h2>
+                  <h2 className="font-bold text-lg mb-4" style={{ color: "var(--text)" }}>{t("Debt Overview")}</h2>
                   <div className="grid grid-cols-2 gap-3">
                     {[
                       { label: "Outstanding Debt", value: money(overview.outstanding), icon: TrendingUp, color: "var(--accent-text)" },
@@ -402,7 +406,7 @@ export default function Credit() {
                       <div key={s.label} className="rounded-xl p-3" style={{ backgroundColor: "var(--white)", border: "1px solid var(--border-cream)" }}>
                         <s.icon className="w-4 h-4 mb-1.5" style={{ color: s.color }} />
                         <p className="font-bold text-base" style={{ color: "var(--text)" }}>{s.value}</p>
-                        <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{s.label}</p>
+                        <p className="text-[11px]" style={{ color: "var(--text-muted)" }}>{t(s.label)}</p>
                       </div>
                     ))}
                   </div>
@@ -411,7 +415,7 @@ export default function Credit() {
             </div>
           )}
 
-          <p className="text-center text-white/70 text-sm mt-10">© 2026. Manage today for a better tomorrow.</p>
+          <p className="text-center text-white/70 text-sm mt-10">{t("© 2026. Manage today for a better tomorrow.")}</p>
         </div>
       </main>
 

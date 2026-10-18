@@ -4,8 +4,10 @@ import Footer from "@/components/Footer";
 import PhoneMockup from "@/components/PhoneMockup";
 import { Link } from "react-router-dom";
 import { ShieldCheck, BookOpen, Bell, BarChart3, Smartphone, Wallet } from "lucide-react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 export default function Home() {
+    const { t } = useLanguage();
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--page-bg)" }}>
       <Navbar />
@@ -16,21 +18,21 @@ export default function Home() {
           {/* Left */}
           <div className="text-center lg:text-left">
             <h1 className="text-white font-bold leading-[1.1] text-4xl sm:text-5xl lg:text-6xl" style={{ fontFamily: "Poppins" }}>
-              Your <span style={{ color: "#F9D103" }}>credit</span> notebook, now digital.
+              {t("Your")} <span style={{ color: "#F9D103" }}>{t("credit")}</span> {t("notebook, now digital.")}
             </h1>
             <p className="text-white/90 mt-5 text-base sm:text-lg leading-relaxed max-w-xl mx-auto lg:mx-0">
-              FIA'O digitizes customer, debt, and payment management for convenience stores and small businesses in Panama, replacing the traditional paper ledger with a modern digital management system.
+              {t("FIA'O digitizes customer, debt, and payment management for convenience stores and small businesses in Panama, replacing the traditional paper ledger with a modern digital management system.")}
             </p>
             <div className="mt-8 flex flex-col sm:flex-row gap-3 justify-center lg:justify-start">
               <Link to="/login" className="px-7 py-3 rounded-full font-bold text-sm text-center transition-transform hover:scale-105" style={{ backgroundColor: "#F9D103", color: "var(--on-yellow)" }}>
-                Login
+                {t("Login")}
               </Link>
               <Link to="/register" className="px-7 py-3 rounded-full font-bold text-sm text-center transition-transform hover:scale-105" style={{ backgroundColor: "#F9D103", color: "var(--on-yellow)" }}>
-                Sign up
+                {t("Sign up")}
               </Link>
             </div>
             <p className="text-white/80 mt-6 text-sm font-medium">
-              Manage your fiado, manage your business.
+              {t("Manage your fiado, manage your business.")}
             </p>
           </div>
 
@@ -45,10 +47,10 @@ export default function Home() {
       <section className="w-full" style={{ backgroundColor: "var(--white)" }}>
         <div className="mx-auto max-w-6xl px-6 py-16">
           <h2 className="text-center font-bold text-3xl sm:text-4xl mb-3" style={{ color: "var(--text)", fontFamily: "Poppins" }}>
-            A safer, more organized alternative to the paper notebook
+            {t("A safer, more organized alternative to the paper notebook")}
           </h2>
           <p className="text-center text-base max-w-2xl mx-auto mb-12" style={{ color: "var(--text-muted)" }}>
-            FIA'O doesn't change how you work — it digitalizes the familiar fiado process, making it more organized, secure, accessible, and easier to manage.
+            {t("FIA'O doesn't change how you work — it digitalizes the familiar fiado process, making it more organized, secure, accessible, and easier to manage.")}
           </p>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
             {[
@@ -63,8 +65,8 @@ export default function Home() {
                 <div className="w-11 h-11 rounded-xl flex items-center justify-center mb-4" style={{ backgroundColor: "#B91C1C" }}>
                   <f.icon className="w-5 h-5 text-white" />
                 </div>
-                <h3 className="font-bold text-lg mb-2" style={{ color: "var(--text)" }}>{f.title}</h3>
-                <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>{f.desc}</p>
+                <h3 className="font-bold text-lg mb-2" style={{ color: "var(--text)" }}>{t(f.title)}</h3>
+                <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>{t(f.desc)}</p>
               </div>
             ))}
           </div>
@@ -75,10 +77,10 @@ export default function Home() {
       <section className="w-full" style={{ backgroundColor: "var(--surface-alt)" }}>
         <div className="mx-auto max-w-6xl px-6 py-16">
           <h2 className="text-center font-bold text-3xl sm:text-4xl mb-3" style={{ color: "var(--text)", fontFamily: "Poppins" }}>
-            Everything you need, built around four operations
+            {t("Everything you need, built around four operations")}
           </h2>
           <p className="text-center text-base max-w-2xl mx-auto mb-12" style={{ color: "var(--text-muted)" }}>
-            Create, Read, Update, and Delete — the foundation of how FIA'O keeps your credit organized.
+            {t("Create, Read, Update, and Delete — the foundation of how FIA'O keeps your credit organized.")}
           </p>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
@@ -91,8 +93,8 @@ export default function Home() {
                 <div className="w-12 h-12 rounded-full mx-auto flex items-center justify-center font-bold text-lg mb-3" style={{ backgroundColor: "#F9D103", color: "var(--on-yellow)" }}>
                   {i + 1}
                 </div>
-                <h3 className="font-bold text-lg mb-1.5" style={{color: "var(--accent-text)" }}>{c.op}</h3>
-                <p className="text-sm" style={{ color: "var(--text-muted)" }}>{c.desc}</p>
+                <h3 className="font-bold text-lg mb-1.5" style={{color: "var(--accent-text)" }}>{t(c.op)}</h3>
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>{t(c.desc)}</p>
               </div>
             ))}
           </div>
@@ -103,7 +105,7 @@ export default function Home() {
       <section className="w-full" style={{ backgroundColor: "var(--white)" }}>
         <div className="mx-auto max-w-6xl px-6 py-16">
           <h2 className="text-center font-bold text-3xl sm:text-4xl mb-12" style={{ color: "var(--text)", fontFamily: "Poppins" }}>
-            Our development roadmap
+            {t("Our development roadmap")}
           </h2>
           <div className="grid lg:grid-cols-3 gap-6">
             {[
@@ -113,10 +115,10 @@ export default function Home() {
             ].map((p) => (
               <div key={p.phase} className="p-6 rounded-2xl" style={{ backgroundColor: "var(--surface)", border: "1px solid var(--border-cream)" }}>
                 <span className="inline-block px-3 py-1 rounded-full text-xs font-bold mb-3" style={{ backgroundColor: p.done ? "#B91C1C" : "var(--border-cream)", color: "#FFFFFF" }}>
-                  {p.done ? "Current" : "Upcoming"}
+                  {p.done ? t("Current") : t("Upcoming")}
                 </span>
-                <h3 className="font-bold text-xl mb-1" style={{ color: "var(--text)" }}>{p.phase} — {p.title}</h3>
-                <p className="text-sm" style={{ color: "var(--text-muted)" }}>{p.desc}</p>
+                <h3 className="font-bold text-xl mb-1" style={{ color: "var(--text)" }}>{t(p.phase)} — {t(p.title)}</h3>
+                <p className="text-sm" style={{ color: "var(--text-muted)" }}>{t(p.desc)}</p>
               </div>
             ))}
           </div>
@@ -127,13 +129,13 @@ export default function Home() {
       <section className="w-full" style={{ backgroundColor: "#B91C1C" }}>
         <div className="mx-auto max-w-4xl px-6 py-16 text-center">
           <h2 className="text-white font-bold text-3xl sm:text-4xl mb-4" style={{ fontFamily: "Poppins" }}>
-            Ready to leave the notebook behind?
+            {t("Ready to leave the notebook behind?")}
           </h2>
           <p className="text-white/90 mb-8 max-w-xl mx-auto">
-            Join the mini-supermarket owners digitalizing their fiado with FIA'O.
+            {t("Join the mini-supermarket owners digitalizing their fiado with FIA'O.")}
           </p>
           <Link to="/register" className="inline-block px-8 py-3.5 rounded-full font-bold text-sm transition-transform hover:scale-105" style={{ backgroundColor: "#F9D103", color: "var(--on-yellow)" }}>
-            Get started — it's free
+            {t("Get started — it's free")}
           </Link>
         </div>
       </section>

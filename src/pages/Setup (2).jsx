@@ -7,9 +7,11 @@ import { completeSetup } from "@/lib/setupApi";
 import { userToForm, settingsToForm, validateSetup, isProfileComplete, setupReturnPath, DEFAULT_RULES_FORM } from "@/lib/settings";
 import { money, parseAmount } from "@/lib/credit";
 import { User, Store, Phone, Mail, MapPin, Wallet, Clock, ArrowRight } from "lucide-react";
+import { useLanguage } from "@/lib/LanguageContext";
 
 // Pantalla que aparece después de iniciar sesión cuando todavía falta información del negocio.
 export default function Setup() {
+    const { t } = useLanguage();
   const { user, logout } = useAuth();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -64,51 +66,51 @@ export default function Setup() {
 
         <form onSubmit={submit} className="rounded-3xl p-6 sm:p-8" style={{ backgroundColor: "var(--surface)", boxShadow: "0 20px 50px rgba(0,0,0,0.25)" }}>
           <h1 className="font-bold text-2xl sm:text-3xl mb-2" style={{ color: "var(--text)", fontFamily: "Poppins" }}>
-            Welcome to FIA'O 👋
+            {t("Welcome to FIA'O 👋")}
           </h1>
           <p className="text-sm mb-8" style={{ color: "var(--text-muted)" }}>
-            Let's set up your store. It takes about a minute, and you can change everything later in Profile.
+            {t("Let's set up your store. It takes about a minute, and you can change everything later in Profile.")}
           </p>
 
           <h2 className={section} style={{ color: "var(--text)" }}>
-            <User className="w-4 h-4" style={{ color: "var(--accent-text)" }} /> About you
+            <User className="w-4 h-4" style={{ color: "var(--accent-text)" }} /> {t("About you")}
           </h2>
           <div className="grid sm:grid-cols-2 gap-4 mb-8">
-            <Field icon={User} label="Your name *" name="full_name" value={info.full_name} onChange={onInfo} placeholder="Graciela Moreno" autoFocus />
-            <Field icon={Phone} label="Phone" name="phone" value={info.phone} onChange={onInfo} placeholder="6123-4567" inputMode="tel" />
+            <Field icon={User} label={t("Your name *")} name="full_name" value={info.full_name} onChange={onInfo} placeholder="Graciela Moreno" autoFocus />
+            <Field icon={Phone} label={t("Phone")} name="phone" value={info.phone} onChange={onInfo} placeholder="6123-4567" inputMode="tel" />
           </div>
 
           <h2 className={section} style={{ color: "var(--text)" }}>
-            <Store className="w-4 h-4" style={{ color: "var(--accent-text)" }} /> Your store
+            <Store className="w-4 h-4" style={{ color: "var(--accent-text)" }} /> {t("Your store")}
           </h2>
           <div className="grid sm:grid-cols-2 gap-4 mb-8">
-            <Field icon={Store} label="Store name *" name="store_name" value={info.store_name} onChange={onInfo} placeholder="Minisúper Doña Chela" hint="Your customers will see it in the reminders you send them." />
-            <Field icon={Mail} label="RUC / ID" name="ruc" value={info.ruc} onChange={onInfo} placeholder="Optional" />
+            <Field icon={Store} label={t("Store name *")} name="store_name" value={info.store_name} onChange={onInfo} placeholder="Minisúper Doña Chela" hint={t("Your customers will see it in the reminders you send them.")} />
+            <Field icon={Mail} label={t("RUC / ID")} name="ruc" value={info.ruc} onChange={onInfo} placeholder={t("Optional")} />
             <div className="sm:col-span-2">
-              <Field icon={MapPin} label="Address" name="address" value={info.address} onChange={onInfo} placeholder="Optional" />
+              <Field icon={MapPin} label={t("Address")} name="address" value={info.address} onChange={onInfo} placeholder={t("Optional")} />
             </div>
           </div>
 
           <h2 className={section} style={{ color: "var(--text)" }}>
-            <Wallet className="w-4 h-4" style={{ color: "var(--accent-text)" }} /> Credit rules
+            <Wallet className="w-4 h-4" style={{ color: "var(--accent-text)" }} /> {t("Credit rules")}
           </h2>
           <div className="grid sm:grid-cols-2 gap-4">
-            <Field icon={Wallet} label="Default credit limit (B/.)" name="default_credit_limit" value={rules.default_credit_limit} onChange={onRules} inputMode="decimal"
-              hint={Number.isNaN(limit) ? "Enter a number." : `Customers can owe up to ${money(limit)} unless you set a different limit for them.`} />
-            <Field icon={Clock} label="Days to pay" name="default_due_days" value={rules.default_due_days} onChange={onRules} inputMode="numeric"
-              hint="How long customers have to pay each credit." />
+            <Field icon={Wallet} label={t("Default credit limit (B/.)")} name="default_credit_limit" value={rules.default_credit_limit} onChange={onRules} inputMode="decimal"
+              hint={Number.isNaN(limit) ? t("Enter a number.") : t(`Customers can owe up to ${money(limit)} unless you set a different limit for them.`)} />
+            <Field icon={Clock} label={t("Days to pay")} name="default_due_days" value={rules.default_due_days} onChange={onRules} inputMode="numeric"
+              hint={t("How long customers have to pay each credit.")} />
           </div>
 
           <div className="flex items-start justify-between gap-3 mt-4 p-4 rounded-xl" style={{ backgroundColor: "var(--white)", border: "1px solid var(--border-cream)" }}>
             <div>
-              <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>Automatic blocking</p>
-              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>Stop new credit when it would take a customer over their limit.</p>
+              <p className="text-sm font-semibold" style={{ color: "var(--text)" }}>{t("Automatic blocking")}</p>
+              <p className="text-xs mt-0.5" style={{ color: "var(--text-muted)" }}>{t("Stop new credit when it would take a customer over their limit.")}</p>
             </div>
             <button
               type="button"
               role="switch"
               aria-checked={rules.auto_block}
-              aria-label="Automatic blocking"
+              aria-label={t("Automatic blocking")}
               onClick={() => {
                 setRulesDraft({ ...rules, auto_block: !rules.auto_block });
                 setError("");
@@ -122,20 +124,20 @@ export default function Setup() {
 
           {error && (
             <p role="alert" className="text-sm rounded-xl px-4 py-3 mt-6" style={{ backgroundColor: "var(--bad-bg)", color: "var(--bad-text)" }}>
-              {error}
+              {t(error)}
             </p>
           )}
 
           <button type="submit" disabled={save.isPending || settingsQuery.isLoading}
             className="w-full mt-6 inline-flex items-center justify-center gap-2 py-3.5 rounded-full font-bold text-sm text-white disabled:opacity-60"
             style={{ backgroundColor: "#B91C1C" }}>
-            {save.isPending ? "Saving..." : "Save and continue"} {!save.isPending && <ArrowRight className="w-4 h-4" />}
+            {save.isPending ? t("Saving...") : t("Save and continue")} {!save.isPending && <ArrowRight className="w-4 h-4" />}
           </button>
 
           <p className="text-xs text-center mt-4" style={{ color: "var(--text-faint)" }}>
-            * Required. {user?.email ? `Signed in as ${user.email}. ` : ""}
+            {t("* Required.")} {user?.email ? t(`Signed in as ${user.email}. `) : ""}
             <button type="button" onClick={() => logout(true)} className="font-semibold underline" style={{ color: "var(--accent-text)" }}>
-              Not you? Log out
+              {t("Not you? Log out")}
             </button>
           </p>
         </form>
