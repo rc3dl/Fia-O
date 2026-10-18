@@ -231,10 +231,10 @@ export default function Clients() {
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4 mb-8">
             <div>
-              <h1 className="font-bold text-3xl sm:text-4xl mb-2" style={{ color: "var(--white)", fontFamily: "Poppins" }}>
+              <h1 className="font-bold text-3xl sm:text-4xl mb-2" style={{ color: "var(--text)", fontFamily: "Poppins" }}>
                 {t("Client Management")}
               </h1>
-              <h2 className="font-semibold text-lg mb-2" style={{ color: "var(--white)" }}>
+              <h2 className="font-semibold text-lg mb-2" style={{ color: "var(--text)" }}>
                 {t("Each client, with a clear account")}
               </h2>
               <p className="text-sm max-w-lg text-white/80">
