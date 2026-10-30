@@ -15,8 +15,10 @@ const NAV_ITEMS = [
   { key: "contact", path: "/contact", authPath: "/contact" },
 ];
 
+
 function Logo() {
-    const { t } = useLanguage();
+  const { t } = useLanguage();
+
   return (
     <Link
       to="/"
@@ -24,12 +26,14 @@ function Logo() {
       aria-label={t("FIA'O, inicio")}
     >
       <img
-  src={withBase("/Logo-fiao-120x40.svg")}
-  alt="FIA'O"
-  className="h-8 sm:h-10 w-auto"
-/>
+        src={withBase("/Logo-fiao-120x40.svg")}
+        alt="FIA'O"
+        className="h-8 sm:h-10 w-auto"
+      />
+    </Link>
   );
 }
+
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
