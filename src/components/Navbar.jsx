@@ -5,7 +5,7 @@ import { useTheme } from "@/lib/ThemeContext";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import NotificationBell from "@/components/NotificationBell";
-
+import { withBase } from "@/lib/withBase";
 const NAV_ITEMS = [
   { key: "home", path: "/", authPath: "/dashboard" },
   { key: "credit", path: "/credit", authPath: "/credit" },
@@ -24,11 +24,10 @@ function Logo() {
       aria-label={t("FIA'O, inicio")}
     >
       <img
-        src="/Logo-fiao-120x40.svg"
-        alt="FIA'O"
-        className="h-8 sm:h-10 w-auto"
-      />
-    </Link>
+  src={withBase("/Logo-fiao-120x40.svg")}
+  alt="FIA'O"
+  className="h-8 sm:h-10 w-auto"
+/>
   );
 }
 

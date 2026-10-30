@@ -7,7 +7,7 @@ import { Label } from "@/components/ui/label";
 import { Lock, Loader2, AlertTriangle } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
 import { useLanguage } from "@/lib/LanguageContext";
-
+import { withBase } from "@/lib/withBase";
 export default function ResetPassword() {
     const { t } = useLanguage();
     const [ready, setReady] = useState(null);
@@ -30,7 +30,7 @@ export default function ResetPassword() {
     setLoading(true);
     try {
       await base44.auth.resetPassword({ newPassword });
-      window.location.href = "/login";
+     window.location.href = withBase("/login");
     } catch (err) {
       setError(err.message || "Failed to reset password");
     } finally {

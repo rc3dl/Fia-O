@@ -2,9 +2,15 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Mail, Phone } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
-
+import { withBase } from "@/lib/withBase";
 function Logo() {
-  return <img src="/Logo-fiao-120x40.svg" alt="FIA'O" className="h-9 sm:h-10 w-auto select-none" />;
+  return (
+    <img
+      src={withBase("/Logo-fiao-120x40.svg")}
+      alt="FIA'O"
+      className="h-9 sm:h-10 w-auto select-none"
+    />
+  );
 }
 
 export default function Footer() {

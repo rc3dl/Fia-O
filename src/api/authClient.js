@@ -1,5 +1,5 @@
 import { supabase } from "@/api/supabaseClient";
-
+import { withBase } from "@/lib/withBase";
 const fail = (error) => {
   if (error) {
     const e = new Error(error.message);
@@ -84,10 +84,7 @@ export const base44 = {
 
     async resetPasswordRequest(email) {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
-        redirectTo: `${window.location.origin}/reset-password`,
-      });
-      fail(error);
-    },
+       redirectTo: `${window.location.origin}${withBase("/reset-password")}`,
 
     async hasSession() {
       const { data } = await supabase.auth.getSession();
@@ -103,19 +100,13 @@ export const base44 = {
     loginWithProvider(provider, returnTo = "/dashboard") {
       supabase.auth.signInWithOAuth({
         provider,
-        options: { redirectTo: window.location.origin + returnTo },
-      });
-    },
+      options: { redirectTo: window.location.origin + withBase(returnTo) },
 
     setToken() {},
 
     async logout(redirectUrl) {
       await supabase.auth.signOut();
-      if (redirectUrl) window.location.href = redirectUrl;
-    },
+      if(redirectUrl) window.location.href = withBase(redirectUrl);
 
     redirectToLogin() {
-      if (window.location.pathname !== "/login") window.location.href = "/login";
-    },
-  },
-};
+    if (window.location.pathname !== withBase("/login")) window.location.href = withBase("/login");

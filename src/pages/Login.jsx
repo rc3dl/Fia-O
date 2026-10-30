@@ -9,6 +9,8 @@ import AuthLayout from "@/components/AuthLayout";
 import GoogleIcon from "@/components/GoogleIcon";
 import { safeReturnTo } from "@/lib/authReturnTo";
 import { useLanguage } from "@/lib/LanguageContext";
+import { withBase } from "@/lib/withBase";
+
 const GOOGLE_ENABLED = import.meta.env.VITE_ENABLE_GOOGLE === "true";
 export default function Login() {
     const { t } = useLanguage();
@@ -26,7 +28,7 @@ export default function Login() {
     setLoading(true);
     try {
       await base44.auth.loginViaEmailPassword(email, password);
-      window.location.href = returnTo;
+    window.location.href = withBase(returnTo);
     } catch (err) {
       setError(err.message || "Invalid email or password");
     } finally {

@@ -1,6 +1,6 @@
 import React from "react";
 import { useLanguage } from "@/lib/LanguageContext";
-
+import { withBase } from "@/lib/withBase";
 // A CSS-built smartphone mockup showing the FIA'O app interface, matching the hero reference.
 export default function PhoneMockup() {
     const { t } = useLanguage();
@@ -25,7 +25,11 @@ export default function PhoneMockup() {
           {/* App header */}
           <div className="px-5 pt-6 pb-4" style={{ backgroundColor: "#B91C1C" }}>
             <div className="flex items-center justify-between">
-          <img src="/Logo-fiao-120x40.svg" alt="FIA'O" className="h-6 w-auto -ml-4" />
+          <img
+  src={withBase("/Logo-fiao-120x40.svg")}
+  alt="FIA'O"
+  className="h-6 w-auto -ml-4"
+/>
              <div className="w-7 h-7 rounded-full bg-white/20 overflow-hidden">
   <img
     src="https://pbs.twimg.com/profile_images/1390905138303234050/_UOSnquT_400x400.jpg"

@@ -11,6 +11,7 @@ import GoogleIcon from "@/components/GoogleIcon";
 import { toast } from "@/components/ui/use-toast";
 import { safeReturnTo } from "@/lib/authReturnTo";
 import { useLanguage } from "@/lib/LanguageContext";
+import { withBase } from "@/lib/withBase";
 
 export default function Register() {
     const { t } = useLanguage();
@@ -33,7 +34,7 @@ export default function Register() {
     try {
       const result = await base44.auth.register({ email, password });
       if (result?.needsVerification === false) {
-        window.location.href = safeReturnTo();
+     window.location.href = withBase(safeReturnTo());
         return;
       }
       setShowOtp(true);
@@ -52,7 +53,7 @@ export default function Register() {
       if (result?.access_token) {
         base44.auth.setToken(result.access_token);
       }
-      window.location.href = safeReturnTo();
+     window.location.href = withBase(safeReturnTo());
     } catch (err) {
       setError(err.message || "Invalid verification code");
     } finally {

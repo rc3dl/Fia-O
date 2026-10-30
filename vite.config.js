@@ -4,6 +4,7 @@ import { fileURLToPath, URL } from 'node:url'
 
 // https://vite.dev/config/
 export default defineConfig({
+    base: '/Fia-O/', 
   plugins: [react()],
   resolve: {
     alias: {

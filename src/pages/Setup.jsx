@@ -8,7 +8,7 @@ import { userToForm, settingsToForm, validateSetup, isProfileComplete, setupRetu
 import { money, parseAmount } from "@/lib/credit";
 import { User, Store, Phone, Mail, MapPin, Wallet, Clock, ArrowRight } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
-
+import { withBase } from "@/lib/withBase";
 // Pantalla que aparece después de iniciar sesión cuando todavía falta información del negocio.
 export default function Setup() {
     const { t } = useLanguage();
@@ -31,7 +31,7 @@ export default function Setup() {
       LEDGER_KEYS.forEach((key) => queryClient.invalidateQueries({ queryKey: key }));
       await queryClient.invalidateQueries({ queryKey: ["settings"] });
       // Recarga completa: así toda la web arranca ya con el perfil guardado.
-      window.location.assign(from);
+    window.location.assign(withBase(from));
     },
     onError: (e) => setError(e.message),
   });
@@ -62,7 +62,11 @@ export default function Setup() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 py-10" style={{ backgroundColor: "var(--page-bg)" }}>
       <div className="w-full max-w-2xl">
-        <img src="/Logo-fiao-200x67.svg" alt="FIA'O" className="h-14 w-auto mx-auto mb-6" />
+      <img
+  src={withBase("/Logo-fiao-200x67.svg")}
+  alt="FIA'O"
+  className="h-14 w-auto mx-auto mb-6"
+/>
 
         <form onSubmit={submit} className="rounded-3xl p-6 sm:p-8" style={{ backgroundColor: "var(--surface)", boxShadow: "0 20px 50px rgba(0,0,0,0.25)" }}>
           <h1 className="font-bold text-2xl sm:text-3xl mb-2" style={{ color: "var(--text)", fontFamily: "Poppins" }}>
