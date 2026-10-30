@@ -32,7 +32,7 @@ export default function PhoneMockup() {
 />
              <div className="w-7 h-7 rounded-full bg-white/20 overflow-hidden">
   <img
-    src="https://pbs.twimg.com/profile_images/1390905138303234050/_UOSnquT_400x400.jpg"
+    src="https://static.vecteezy.com/system/resources/thumbnails/005/544/718/small_2x/profile-icon-design-free-vector.jpg"
     alt={t("Profile")}
     className="w-full h-full object-cover"
   />
