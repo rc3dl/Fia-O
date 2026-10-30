@@ -1,22 +1,72 @@
+
 import React from "react";
+import { Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
+import { useLanguage } from "@/lib/LanguageContext";
 import { withBase } from "@/lib/withBase";
-export default function AuthLayout({ icon: Icon, title, subtitle, footer, children }) {
+
+export default function AuthLayout({
+  icon: Icon,
+  title,
+  subtitle,
+  footer,
+  children,
+}) {
+  const { t } = useLanguage();
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-background px-4">
       <div className="w-full max-w-md">
-        <img src="/Logo-fiao-200x67.svg" alt="FIA'O" className=" h-12 sm:h-14 w-auto mx-auto mb-6 translate-y-3" />
-<div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary mb-4">
-            <Icon className="w-7 h-7 text-primary-foreground" aria-hidden="true" />
-          </div>
-          <h1 className="text-3xl font-bold tracking-tight text-foreground">{title}</h1>
-          {subtitle && <p className="text-muted-foreground mt-2">{subtitle}</p>}
+
+        {/* Volver al inicio */}
+        <div className="mb-5">
+          <Link
+            to="/"
+            className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="w-4 h-4" aria-hidden="true" />
+            {t("common.back")}
+          </Link>
         </div>
+
+        {/* Logo de FIA'O */}
+        <Link
+          to="/"
+          aria-label="FIA'O, inicio"
+          className="flex justify-center"
+        >
+          <img
+            src={withBase("/Logo-fiao-200x67.svg")}
+            alt="FIA'O"
+            className="h-12 sm:h-14 w-auto mx-auto mb-6 translate-y-3"
+          />
+        </Link>
+
+        <div className="text-center mb-10">
+          <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-primary mb-4">
+            <Icon
+              className="w-7 h-7 text-primary-foreground"
+              aria-hidden="true"
+            />
+          </div>
+
+          <h1 className="text-3xl font-bold tracking-tight text-foreground">
+            {title}
+          </h1>
+
+          {subtitle && (
+            <p className="text-muted-foreground mt-2">{subtitle}</p>
+          )}
+        </div>
+
         <div className="bg-card rounded-2xl shadow-sm border border-border p-8">
           {children}
         </div>
+
         {footer && (
-          <p className="text-center text-sm text-muted-foreground mt-6">{footer}</p>
+          <p className="text-center text-sm text-muted-foreground mt-6">
+            {footer}
+          </p>
         )}
       </div>
     </div>
