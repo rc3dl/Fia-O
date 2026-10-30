@@ -19,7 +19,7 @@ export default function AuthLayout({
       <div className="w-full max-w-md">
 
         {/* Volver al inicio */}
-        <div className="mb-5">
+        <div className="mb-5 w-full flex justify-start mt-4">
           <Link
             to="/"
             className="inline-flex items-center gap-2 text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
