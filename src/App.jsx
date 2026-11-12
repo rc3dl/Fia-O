@@ -9,6 +9,7 @@ import ScrollToTop from './components/ScrollToTop';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import ProfileGate from '@/components/ProfileGate';   // debajo de: import ProtectedRoute ...
 import { ThemeProvider } from '@/lib/ThemeContext';
+import TourProvider from '@/components/tour/TourProvider';
 import { LanguageProvider } from '@/lib/LanguageContext';
 import Home from '@/pages/Home';
 import Credit from '@/pages/Credit';
@@ -95,9 +96,11 @@ function App() {
       <ThemeProvider>
         <LanguageProvider>
           <QueryClientProvider client={queryClientInstance}>
-         <Router basename={import.meta.env.BASE_URL}>
-              <ScrollToTop />
-              <AuthenticatedApp />
+            <Router basename={import.meta.env.BASE_URL}>
+              <TourProvider>
+                <ScrollToTop />
+                <AuthenticatedApp />
+              </TourProvider>
             </Router>
             <Toaster />
           </QueryClientProvider>

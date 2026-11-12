@@ -117,7 +117,7 @@ export default function Reports() {
                 {t("Track credit activity, payments and overdue balances for any period.")}
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div data-tour="reports-export" className="flex flex-wrap gap-2">
               <button onClick={() => run("pdf")} disabled={!canExport}
                 className="flex items-center gap-2 px-4 py-2.5 rounded-full text-sm font-semibold disabled:opacity-60" style={{ backgroundColor: "var(--white)", color: "var(--text)" }}>
                 <FileText className="w-4 h-4" /> {exporting === "pdf" ? t("Creating...") : t("Export PDF")}
@@ -134,7 +134,7 @@ export default function Reports() {
           )}
 
           {/* Filters */}
-          <div className="rounded-2xl p-5 mb-6" style={card}>
+          <div data-tour="reports-filters" className="rounded-2xl p-5 mb-6" style={card}>
             <div className="flex flex-wrap gap-2 mb-4">
               {PRESETS.map((p) => (
                 <button key={p.key} onClick={() => choosePreset(p.key)} className="px-4 py-1.5 rounded-full text-sm font-semibold"
@@ -187,7 +187,7 @@ export default function Reports() {
               </p>
 
               {/* Stat cards */}
-              <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+              <div data-tour="reports-cards" className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                 <div className="p-4 rounded-2xl" style={card}>
                   <TrendingUp className="w-5 h-5 mb-2" style={{ color: "var(--accent-text)" }} />
                   <p className="text-[11px] font-semibold tracking-wide" style={{ color: "var(--text-muted)" }}>{t("TOTAL ACTIVE CREDIT")}</p>
@@ -222,7 +222,7 @@ export default function Reports() {
 
               <div className="grid lg:grid-cols-3 gap-5 mb-6">
                 {/* Chart */}
-                <div className="lg:col-span-2 rounded-2xl p-5" style={card}>
+                <div data-tour="reports-chart" className="lg:col-span-2 rounded-2xl p-5" style={card}>
                   <h2 className="font-bold text-lg mb-1" style={{ color: "var(--text)" }}>{t("Credit activity & payments")}</h2>
                   <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>{t("Credit issued, payments received and overdue balances in the period.")}</p>
                   {hasChartData ? (
@@ -246,7 +246,7 @@ export default function Reports() {
                 </div>
 
                 {/* Breakdown */}
-                <div className="rounded-2xl p-5" style={card}>
+                <div data-tour="reports-status" className="rounded-2xl p-5" style={card}>
                   <h2 className="font-bold text-lg mb-1" style={{ color: "var(--text)" }}>{t("Credit status")}</h2>
                   <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>{t("What happened to the credit issued in the period (")}{money(report.issued)}).</p>
                   {report.issued > 0 ? (
@@ -270,7 +270,7 @@ export default function Reports() {
               </div>
 
               {/* Transactions */}
-              <div className="rounded-2xl p-5" style={card}>
+              <div data-tour="reports-table" className="rounded-2xl p-5" style={card}>
                 <h2 className="font-bold text-lg mb-4" style={{ color: "var(--text)" }}>{t("Transactions")}</h2>
                 {table.total === 0 ? (
                   <p className="py-8 text-center text-sm" style={{ color: "var(--text-faint)" }}>{t("No transactions in this period.")}</p>

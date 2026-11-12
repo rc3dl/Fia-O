@@ -379,7 +379,7 @@ export default function Products({ initialTab = "Inventory" }) {
   };
 
   const tabButton = (key, label) => (
-    <button
+    <button data-tour={`products-tab-${key.toLowerCase()}`}
       onClick={() => setTab(key)}
       className="px-5 py-2.5 rounded-full text-sm font-semibold transition"
       style={{ backgroundColor: tab === key ? "#B91C1C" : "var(--surface)", color: tab === key ? "#FFFFFF" : "var(--text)" }}
@@ -395,7 +395,7 @@ export default function Products({ initialTab = "Inventory" }) {
       <main className="flex-1">
         {/* Sub-nav */}
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="flex gap-2 mt-2">
+          <div data-tour="products-tabs" className="flex gap-2 mt-2">
             {tabButton("Inventory", "Inventory")}
             {tabButton("Fiado", "Register Fiado Sale")}
           </div>
@@ -403,9 +403,9 @@ export default function Products({ initialTab = "Inventory" }) {
 
         {/* Content card */}
         <div className="mx-auto max-w-6xl px-4 sm:px-6 py-6">
-          <div className="rounded-3xl p-6 sm:p-8" style={{ backgroundColor: "var(--surface-alt)" }}>
+          <div data-tour="products-content" className="rounded-3xl p-6 sm:p-8" style={{ backgroundColor: "var(--surface-alt)" }}>
             {/* Search */}
-            <div className="relative mb-6 max-w-md">
+            <div data-tour="products-search" className="relative mb-6 max-w-md">
               <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2" style={{ color: "var(--text-faint)" }} />
               <input
                 value={query}
@@ -460,7 +460,7 @@ export default function Products({ initialTab = "Inventory" }) {
                 )}
 
                 {/* Grid */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div data-tour="products-grid" className="grid grid-cols-2 lg:grid-cols-4 gap-4">
                   {filtered.map((p) => {
                     const low = isLowStock(p);
                     return (
@@ -496,7 +496,7 @@ export default function Products({ initialTab = "Inventory" }) {
                   })}
 
                   {/* Add card */}
-                  <button onClick={() => setModal({ product: null })} className="rounded-2xl flex flex-col items-center justify-center p-6 min-h-[280px]" style={{ border: "2px dashed var(--border-cream)", backgroundColor: "transparent" }}>
+                  <button data-tour="products-add" onClick={() => setModal({ product: null })} className="rounded-2xl flex flex-col items-center justify-center p-6 min-h-[280px]" style={{ border: "2px dashed var(--border-cream)", backgroundColor: "transparent" }}>
                     <div className="w-14 h-14 rounded-full flex items-center justify-center mb-3" style={{ backgroundColor: "#F9D103" }}>
                       <Plus className="w-6 h-6" style={{ color: "var(--on-yellow)" }} />
                     </div>

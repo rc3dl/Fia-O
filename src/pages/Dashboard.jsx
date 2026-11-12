@@ -89,7 +89,7 @@ export default function Dashboard() {
           )}
 
           {/* Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
+          <div data-tour="dash-stats" className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-8">
             {stats.map((s) => (
               <div key={s.label} className="p-4 rounded-2xl" style={card}>
                 <s.icon className="w-5 h-5 mb-2" style={{ color: s.color }} />
@@ -102,7 +102,7 @@ export default function Dashboard() {
           {/* To collect + Recent activity */}
           {!isLoading && !isError && (
             <div className="grid lg:grid-cols-2 gap-5 mb-8">
-              <div className="rounded-2xl p-5" style={card}>
+              <div data-tour="dash-collect" className="rounded-2xl p-5" style={card}>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-bold text-lg" style={{ color: "var(--text)" }}>{t("Who to collect")}</h2>
                   <Link to="/clients" className="text-sm font-semibold flex items-center gap-1" style={{ color: "var(--accent-text)" }}>
@@ -130,7 +130,7 @@ export default function Dashboard() {
                 )}
               </div>
 
-              <div className="rounded-2xl p-5" style={card}>
+              <div data-tour="dash-activity" className="rounded-2xl p-5" style={card}>
                 <div className="flex items-center justify-between mb-4">
                   <h2 className="font-bold text-lg" style={{ color: "var(--text)" }}>{t("Recent activity")}</h2>
                   <Link to="/credit" className="text-sm font-semibold flex items-center gap-1" style={{ color: "var(--accent-text)" }}>
@@ -159,7 +159,7 @@ export default function Dashboard() {
           <h2 className="text-white font-bold text-xl mb-4" style={{ fontFamily: "Poppins" }}>
             {t("Quick access")}
           </h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div data-tour="dash-quick" className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {QUICK_LINKS.map((q) => (
               <Link
                 key={q.path}

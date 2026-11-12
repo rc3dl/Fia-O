@@ -241,7 +241,7 @@ export default function Clients() {
   {t("Register your customers in seconds and see at a glance who is up to date, who owes, and who to remind.")}
 </p>
             </div>
-            <button
+            <button data-tour="clients-new"
               onClick={() => setModal({ client: null })}
               className="self-start flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold"
               style={{ backgroundColor: "#F9D103", color: "var(--on-yellow)" }}
@@ -251,9 +251,9 @@ export default function Clients() {
           </div>
 
           <div className="grid lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 rounded-3xl p-6" style={{ backgroundColor: "var(--white)", boxShadow: "0 10px 30px rgba(0,0,0,0.08)" }}>
+            <div data-tour="clients-main" className="lg:col-span-2 rounded-3xl p-6" style={{ backgroundColor: "var(--white)", boxShadow: "0 10px 30px rgba(0,0,0,0.08)" }}>
               {/* Search */}
-              <div className="relative mb-4">
+              <div data-tour="clients-search" className="relative mb-4">
                 <Search className="w-4 h-4 absolute left-4 top-1/2 -translate-y-1/2" style={{ color: "var(--text-faint)" }} />
                 <input
                   value={query}
@@ -265,7 +265,7 @@ export default function Clients() {
               </div>
 
               {/* Filters */}
-              <div className="flex flex-wrap gap-2 mb-5">
+              <div data-tour="clients-filters" className="flex flex-wrap gap-2 mb-5">
                 {FILTERS.map((f) => (
                   <button
                     key={f}
@@ -303,7 +303,7 @@ export default function Clients() {
               ) : filtered.length === 0 ? (
                 <p className="py-10 text-center text-sm" style={{ color: "var(--text-muted)" }}>{t("No clients match your search or filter.")}</p>
               ) : (
-                <div className="overflow-x-auto">
+                <div data-tour="clients-table" className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
                       <tr className="text-left text-xs font-semibold tracking-wide" style={{ color: "var(--text-faint)", borderBottom: "1px solid var(--border-cream)" }}>
@@ -347,7 +347,7 @@ export default function Clients() {
 
               {/* Recordatorio: solo aparece si alguien debe */}
               {target && (
-                <div className="mt-6 p-5 rounded-2xl" style={{ backgroundColor: "var(--warn-bg)" }}>
+                <div data-tour="clients-reminder" className="mt-6 p-5 rounded-2xl" style={{ backgroundColor: "var(--warn-bg)" }}>
                   <h3 className="font-bold text-sm mb-1" style={{ color: "var(--text)" }}>{t("Payment reminder ready")}</h3>
                   <p className="text-sm mb-3" style={{ color: "var(--text-muted)" }}>
                     {t("WhatsApp to")} {target.name}: "{message}"
@@ -366,7 +366,7 @@ export default function Clients() {
             </div>
 
             {/* Side card - Friendly Collections */}
-            <div className="rounded-3xl p-6 h-fit" style={{ backgroundColor: "var(--white)", boxShadow: "0 10px 30px rgba(0,0,0,0.08)" }}>
+            <div data-tour="clients-collections" className="rounded-3xl p-6 h-fit" style={{ backgroundColor: "var(--white)", boxShadow: "0 10px 30px rgba(0,0,0,0.08)" }}>
               <h3 className="font-bold text-lg mb-2" style={{ color: "var(--text)" }}>{t("Friendly Collections")}</h3>
               <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
                 {t("Keep track of pending payments and send friendly reminders — no awkward conversations.")}

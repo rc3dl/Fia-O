@@ -34,7 +34,7 @@ export default function NotificationBell({ defaultOpen = false }) {
   const dot = { overdue: "var(--bad-text)", stock: "var(--warn-text)" };
 
   return (
-    <div ref={ref} className="relative">
+    <div data-tour="bell" ref={ref} className="relative">
       <button
         type="button"
         onClick={() => setOpen(!open)}

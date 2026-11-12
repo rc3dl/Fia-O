@@ -5,6 +5,7 @@ import { useTheme } from "@/lib/ThemeContext";
 import { useAuth } from "@/lib/AuthContext";
 import { useLanguage } from "@/lib/LanguageContext";
 import NotificationBell from "@/components/NotificationBell";
+import { TourButton, TourMobileItems } from "@/components/tour/TourButton";
 import { withBase } from "@/lib/withBase";
 const NAV_ITEMS = [
   { key: "home", path: "/", authPath: "/dashboard" },
@@ -63,7 +64,7 @@ export default function Navbar() {
           {isAuthenticated ? (
             <>
               {/* Desktop navigation */}
-              <div className="hidden lg:flex items-center gap-1.5">
+              <div data-tour="nav-links" className="hidden lg:flex items-center gap-1.5">
                 {NAV_ITEMS.map((item) => {
                   const target =
                     item.key === "home" ? homePath : item.path;
@@ -93,8 +94,9 @@ export default function Navbar() {
                   {language === "es" ? t("ESP") : t("ENG")}
                 </button>
                 <NotificationBell />
+                <TourButton />
 
-                <button
+                <button data-tour="theme-toggle"
                   type="button"
                   onClick={toggleTheme}
                   className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition"
@@ -107,7 +109,7 @@ export default function Navbar() {
                   )}
                 </button>
 
-                <Link
+                <Link data-tour="profile-link"
                   to="/profile"
                   className="w-8 h-8 rounded-full flex items-center justify-center hover:bg-white/10 transition"
                   aria-label={t("Profile")}
@@ -123,7 +125,7 @@ export default function Navbar() {
                 </button>
                 <NotificationBell />
 
-                <button
+                <button data-tour="nav-menu"
                   type="button"
                   className="w-9 h-9 rounded-full flex items-center justify-center text-white"
                   onClick={() => setOpen(!open)}
@@ -210,6 +212,8 @@ export default function Navbar() {
               <UserCircle className="w-4 h-4" />
               {t("nav.profile")}
             </Link>
+
+            <TourMobileItems onDone={() => setOpen(false)} />
 
             {/* Theme toggle on mobile */}
             <button

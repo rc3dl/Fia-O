@@ -176,7 +176,7 @@ export default function Credit() {
               </button>
             </div>
           ) : !client ? (
-            <div className="max-w-md mx-auto rounded-2xl p-8 text-center" style={card}>
+            <div data-tour="credit-empty" className="max-w-md mx-auto rounded-2xl p-8 text-center" style={card}>
               <h2 className="font-bold text-lg mb-2" style={{ color: "var(--text)" }}>{t("No customers yet")}</h2>
               <p className="text-sm mb-4" style={{ color: "var(--text-muted)" }}>
                 {t("Add your first customer to start registering credits and payments.")}
@@ -189,7 +189,7 @@ export default function Credit() {
             <div className="grid lg:grid-cols-3 gap-5">
               {/* Column 1 - Customer */}
               <div className="space-y-5">
-                <div className="rounded-2xl p-5" style={card}>
+                <div data-tour="credit-customer" className="rounded-2xl p-5" style={card}>
                   <label htmlFor="customer" className="text-xs font-semibold tracking-wide block mb-2" style={{ color: "var(--text-muted)" }}>{t("SELECT A CUSTOMER")}</label>
                   <div className="relative">
                     <select
@@ -207,7 +207,7 @@ export default function Credit() {
                   </div>
                 </div>
 
-                <div className="rounded-2xl p-5" style={card}>
+                <div data-tour="credit-card" className="rounded-2xl p-5" style={card}>
                   <h2 className="font-bold text-xl mb-4" style={{ color: "var(--text)" }}>{client.name}</h2>
                   <div className="grid grid-cols-2 gap-3 mb-4">
                     <div className="rounded-xl p-3" style={{ backgroundColor: "var(--white)", border: "1px solid var(--border-cream)" }}>
@@ -233,7 +233,7 @@ export default function Credit() {
                   )}
                 </div>
 
-                <div className="rounded-2xl p-5" style={card}>
+                <div data-tour="credit-block" className="rounded-2xl p-5" style={card}>
                   <div className="flex items-start justify-between gap-3">
                     <div>
                       <h3 className="font-semibold text-sm mb-1" style={{ color: "var(--text)" }}>{t("Automatic Blocking")}</h3>
@@ -258,7 +258,7 @@ export default function Credit() {
 
               {/* Column 2 - Debt & Payment */}
               <div className="space-y-5">
-                <div className="rounded-2xl p-5" style={card}>
+                <div data-tour="credit-history" className="rounded-2xl p-5" style={card}>
                   <h2 className="font-bold text-lg mb-1" style={{ color: "var(--text)" }}>{t("Debt History")}</h2>
                   <p className="text-xs mb-4" style={{ color: "var(--text-muted)" }}>{t("Track all purchases and payments.")}</p>
                   {history.length === 0 ? (
@@ -299,7 +299,7 @@ export default function Credit() {
                 </div>
 
                 {/* New credit */}
-                <form onSubmit={submitFiado} className="rounded-2xl p-5" style={card}>
+                <form data-tour="credit-new" onSubmit={submitFiado} className="rounded-2xl p-5" style={card}>
                   <h2 className="font-bold text-lg mb-4" style={{ color: "var(--text)" }}>{t("New Credit (Fiado)")}</h2>
                   <label htmlFor="fiado-amount" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>{t("Amount (B/.)")}</label>
                   <input id="fiado-amount" value={fiadoAmount} onChange={(e) => setFiadoAmount(e.target.value)} inputMode="decimal" placeholder="0.00"
@@ -319,7 +319,7 @@ export default function Credit() {
                 </form>
 
                 {/* Register payment */}
-                <div className="rounded-2xl p-5" style={card}>
+                <div data-tour="credit-payment" className="rounded-2xl p-5" style={card}>
                   <h2 className="font-bold text-lg mb-4" style={{ color: "var(--text)" }}>{t("Register Payment")}</h2>
                   <label htmlFor="pay-amount" className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>{t("Payment Amount (B/.)")}</label>
                   <input
@@ -375,7 +375,7 @@ export default function Credit() {
               </div>
 
               {/* Column 3 - Activity & Overview */}
-              <div className="space-y-5">
+              <div data-tour="credit-side" className="space-y-5">
                 <div className="rounded-2xl p-5" style={card}>
                   <h2 className="font-bold text-lg mb-4" style={{ color: "var(--text)" }}>{t("Recent Activity")}</h2>
                   {entries.length === 0 ? (

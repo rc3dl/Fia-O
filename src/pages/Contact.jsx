@@ -106,14 +106,14 @@ export default function Contact() {
 
           <div className="grid lg:grid-cols-2 gap-6">
             {/* FAQ */}
-            <div className="space-y-3">
+            <div data-tour="contact-faq" className="space-y-3">
               {FAQS.map((f) => (
                 <FaqItem key={f.q} item={f} />
               ))}
             </div>
 
             {/* Contact form */}
-            <div className="rounded-3xl p-6 sm:p-8 h-fit" style={{ backgroundColor: "var(--white)", boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}>
+            <div data-tour="contact-form" className="rounded-3xl p-6 sm:p-8 h-fit" style={{ backgroundColor: "var(--white)", boxShadow: "0 10px 30px rgba(0,0,0,0.1)" }}>
               <h2 className="font-bold text-xl mb-5" style={{ color: "var(--text)" }}>{t("Send us a message")}</h2>
               <form onSubmit={submit} className="space-y-4" noValidate>
                 <div>

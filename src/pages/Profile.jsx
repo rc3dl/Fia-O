@@ -4,11 +4,12 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { useAuth } from "@/lib/AuthContext";
+import { useTour } from "@/components/tour/TourProvider";
 import { base44 } from "@/api/authClient";
 import { fetchSettings, saveSettings, LEDGER_KEYS } from "@/lib/creditApi";
 import { userToForm, validateProfile, settingsToForm, validateSettings, isDirty } from "@/lib/settings";
 import { money, parseAmount } from "@/lib/credit";
-import { User, Store, Mail, Phone, MapPin, LogOut, Save, Shield, Globe, Wallet, Clock, Bell } from "lucide-react";
+import { User, Store, Mail, Phone, MapPin, LogOut, Save, Shield, Globe, Wallet, Clock, Bell, Compass } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 
 const card = { backgroundColor: "var(--surface)" };
@@ -30,6 +31,7 @@ function Note({ note }) {
 
 export default function Profile() {
     const { t, language } = useLanguage();
+  const tour = useTour();
   const { user, logout, refreshUser } = useAuth();
   const queryClient = useQueryClient();
   const settingsQuery = useQuery({ queryKey: ["settings"], queryFn: fetchSettings });
@@ -126,7 +128,7 @@ export default function Profile() {
           </div>
 
           {/* Business information */}
-          <form onSubmit={submitInfo} className="rounded-2xl p-6 mb-6" style={card}>
+          <form data-tour="profile-info" onSubmit={submitInfo} className="rounded-2xl p-6 mb-6" style={card}>
             <h2 className="font-bold text-lg mb-5 flex items-center gap-2" style={{ color: "var(--text)" }}>
               <Store className="w-5 h-5" style={{ color: "var(--accent-text)" }} /> {t("Business information")}
             </h2>
@@ -151,7 +153,7 @@ export default function Profile() {
           </form>
 
           {/* Credit rules */}
-          <form onSubmit={submitRules} className="rounded-2xl p-6 mb-6" style={card}>
+          <form data-tour="profile-rules" onSubmit={submitRules} className="rounded-2xl p-6 mb-6" style={card}>
             <h2 className="font-bold text-lg mb-1 flex items-center gap-2" style={{ color: "var(--text)" }}>
               <Wallet className="w-5 h-5" style={{ color: "var(--accent-text)" }} /> {t("Credit rules")}
             </h2>
@@ -228,7 +230,7 @@ export default function Profile() {
           </form>
 
           {/* Account */}
-          <div className="rounded-2xl p-6 mb-6" style={card}>
+          <div data-tour="profile-account" className="rounded-2xl p-6 mb-6" style={card}>
             <h2 className="font-bold text-lg mb-5 flex items-center gap-2" style={{ color: "var(--text)" }}>
               <Shield className="w-5 h-5" style={{ color: "var(--accent-text)" }} /> {t("Account")}
             </h2>
@@ -270,6 +272,27 @@ export default function Profile() {
               {toggleNotifications.isError && (
                 <p role="alert" className="text-sm mt-2" style={{ color: "var(--bad-text)" }}>{t("Could not save:")} {toggleNotifications.error.message}</p>
               )}
+              <div className="flex items-center justify-between gap-3 py-3" style={{ borderTop: "1px solid var(--border-cream)" }}>
+                <div className="flex items-center gap-3">
+                  <Compass className="w-4 h-4" style={{ color: "var(--accent-text)" }} />
+                  <div>
+                    <span className="text-sm font-medium block" style={{ color: "var(--text)" }}>
+                      {language === "es" ? "Recorrido guiado" : "Guided tour"}
+                    </span>
+                    <span className="text-[11px] block" style={{ color: "var(--text-faint)" }}>
+                      {language === "es" ? "Una guía paso a paso por cada sección de FIA'O." : "A step-by-step walkthrough of every screen."}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => tour.start("all")}
+                  className="px-4 py-2 rounded-full text-sm font-semibold"
+                  style={{ backgroundColor: "#F9D103", color: "var(--on-yellow)" }}
+                >
+                  {language === "es" ? "Iniciar recorrido" : "Start tour"}
+                </button>
+              </div>
             </div>
           </div>
 
