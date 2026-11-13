@@ -1,60 +1,109 @@
+
 import React from "react";
 import { Link } from "react-router-dom";
-import { Mail, Phone } from "lucide-react";
+import { Mail } from "lucide-react";
 import { useLanguage } from "@/lib/LanguageContext";
 import { withBase } from "@/lib/withBase";
+
 function Logo() {
   return (
     <img
       src={withBase("/Logo-fiao-120x40.svg")}
       alt="FIA'O"
-      className="h-9 sm:h-10 w-auto select-none"
+      className="h-8 w-auto select-none"
     />
   );
 }
 
 export default function Footer() {
-    const { t } = useLanguage();
+  const { t } = useLanguage();
+
   return (
     <footer className="w-full">
-          {/* Dark footer */}
-      <div className="w-full py-12" style={{ backgroundColor: "var(--surface)" }}>
+      <div
+        className="w-full py-6"
+        style={{ backgroundColor: "var(--surface)" }}
+      >
         <div className="mx-auto max-w-6xl px-6">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
-            <div className="md:col-span-1">
+
+          <div className="flex flex-col md:flex-row justify-between gap-6">
+
+            {/* Brand */}
+            <div className="max-w-xs">
               <Logo />
-              <p className="text-sm mt-3 leading-relaxed" style={{ color: "var(--text-muted)" }}>
+              <p
+                className="text-xs mt-2 leading-relaxed"
+                style={{ color: "var(--text-muted)" }}
+              >
                 {t("The app for shopkeepers to manage their credit lines without paper notebooks or wall markings.")}
               </p>
             </div>
-            <div>
-              <h4 className="text-xs font-semibold tracking-wider mb-3" style={{ color: "var(--accent-text)" }}>{t("NAVIGATION")}</h4>
-              <ul className="space-y-2">
-                {["Home", "Credit", "Products", "Clients"].map((l) => (
-                  <li key={l}><Link to={`/${l === "Home" ? "" : l.toLowerCase()}`} className="text-sm hover:underline" style={{ color: "var(--text-muted)" }}>{t(l)}</Link></li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs font-semibold tracking-wider mb-3" style={{ color: "var(--accent-text)" }}>{t("PRODUCT")}</h4>
-              <ul className="space-y-2">
-                {["Reports", "Inventory", "Digital Catalog", "Payment Integration"].map((l) => (
-                  <li key={l}><span className="text-sm" style={{ color: "var(--text-muted)" }}>{t(l)}</span></li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-xs font-semibold tracking-wider mb-3" style={{ color: "var(--accent-text)" }}>{t("CONTACT")}</h4>
-              <ul className="space-y-2">
-                <li className="flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}><Mail className="w-3.5 h-3.5" /> {t("hola@fiao.app")}</li>
-                <li className="flex items-center gap-2 text-sm" style={{ color: "var(--text-muted)" }}><Phone className="w-3.5 h-3.5" /> +507 6000-0000</li>
-              </ul>
+
+            {/* Useful Links */}
+            <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm">
+              <Link
+                to="/"
+                className="hover:underline"
+                style={{ color: "var(--text-muted)" }}
+              >
+                {t("Website")}
+              </Link>
+
+              <Link
+                to="/account"
+                className="hover:underline"
+                style={{ color: "var(--text-muted)" }}
+              >
+                {t("My Account")}
+              </Link>
+
+              <Link
+                to="/terms"
+                className="hover:underline"
+                style={{ color: "var(--text-muted)" }}
+              >
+                {t("Terms of Service")}
+              </Link>
+
+              <Link
+                to="/privacy"
+                className="hover:underline"
+                style={{ color: "var(--text-muted)" }}
+              >
+                {t("Privacy Policy")}
+              </Link>
+
+              <a
+                href="mailto:hola@fiao.app"
+                className="flex items-center gap-1.5 hover:underline"
+                style={{ color: "var(--text-muted)" }}
+              >
+                <Mail className="w-3.5 h-3.5" />
+                {t("Contact")}
+              </a>
             </div>
           </div>
-          <div className="pt-6 border-t flex flex-col sm:flex-row justify-between gap-2" style={{ borderColor: "var(--border-cream)" }}>
-            <span className="text-xs" style={{ color: "var(--text-faint)" }}>{t("© 2026 FIA'O. Visual prototypes.")}</span>
-            <span className="text-xs" style={{ color: "var(--text-faint)" }}>{t("Made for local businesses")}</span>
+
+          {/* Bottom */}
+          <div
+            className="mt-5 pt-4 border-t flex flex-col sm:flex-row justify-between gap-2"
+            style={{ borderColor: "var(--border-cream)" }}
+          >
+            <span
+              className="text-xs"
+              style={{ color: "var(--text-faint)" }}
+            >
+              {t("© 2026 FIA'O. All rights reserved.")}
+            </span>
+
+            <span
+              className="text-xs"
+              style={{ color: "var(--text-faint)" }}
+            >
+              {t("Made for local businesses")}
+            </span>
           </div>
+
         </div>
       </div>
     </footer>
