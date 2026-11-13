@@ -186,7 +186,7 @@ export default function Credit() {
               </Link>
             </div>
           ) : (
-            <div className="grid lg:grid-cols-3 gap-5">
+            <div className="grid grid-cols-1 lg:grid-cols-[minmax(220px,0.9fr)_minmax(0,1.5fr)_minmax(240px,0.9fr)] gap-5">
               {/* Column 1 - Customer */}
               <div className="space-y-5">
                 <div data-tour="credit-customer" className="rounded-2xl p-5" style={card}>
@@ -269,7 +269,7 @@ export default function Credit() {
                         const isPayment = row.kind === "pago";
                         const Icon = isPayment ? Banknote : ShoppingCart;
                         return (
-                          <div key={row.id} className="flex items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: "var(--white)", border: "1px solid var(--border-cream)" }}>
+                          <div key={row.id} className="flex flex-wrap xl:flex-nowrap items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: "var(--white)", border: "1px solid var(--border-cream)" }}>
                             <span className="text-xs font-semibold w-14" style={{ color: "var(--text-muted)" }}>{shortDate(row.created_at, language === "es" ? "es-PA" : "en-GB")}</span>
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: isPayment ? "var(--ok-bg)" : "var(--warn-bg)" }}>
                               <Icon className="w-4 h-4" style={{ color: isPayment ? "var(--ok-text)" : "var(--warn-text)" }} />
@@ -333,7 +333,7 @@ export default function Credit() {
                     style={fieldStyle}
                   />
                   <p className="text-xs font-semibold block mb-2" style={{ color: "var(--text-muted)" }}>{t("Payment Type")}</p>
-                  <div className="grid grid-cols-2 gap-2 mb-4">
+                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-2 mb-4">
                     {[
                       { key: "partial", label: "Partial Payment" },
                       { key: "full", label: "Full Payment" },
