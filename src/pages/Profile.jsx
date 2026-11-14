@@ -3,14 +3,14 @@ import { Link } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
-import { useAuth } from "@/lib/AuthContext";
-import { useTour } from "@/components/tour/TourProvider";
+import { useAuth } from "@/contexts/AuthContext";
+import { useTour } from "@/tour/TourProvider";
 import { base44 } from "@/api/authClient";
-import { fetchSettings, saveSettings, LEDGER_KEYS } from "@/lib/creditApi";
+import { fetchSettings, saveSettings, LEDGER_KEYS } from "@/api/creditApi";
 import { userToForm, validateProfile, settingsToForm, validateSettings, isDirty } from "@/lib/settings";
 import { money, parseAmount } from "@/lib/credit";
 import { User, Store, Mail, Phone, MapPin, LogOut, Save, Shield, Globe, Wallet, Clock, Bell, Compass } from "lucide-react";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const card = { backgroundColor: "var(--surface)" };
 
@@ -50,7 +50,8 @@ export default function Profile() {
   const rulesDirty = isDirty(rulesDraft, rulesSaved);
 
   const saveInfo = useMutation({
-    mutationFn: (values) => base44.auth.updateMe(values),
+    mutationFn: (/** @type {{ full_name: string; store_name: string; phone: string; address: string; ruc: string }} */ values) =>
+      base44.auth.updateMe(values),
     onSuccess: async () => {
       await refreshUser(); // para que el nombre de la tienda se actualice en toda la web
       setInfoDraft(null);
@@ -72,7 +73,7 @@ export default function Profile() {
     // Interruptor de la campana: se guarda al instante.
   const notificationsOn = settingsQuery.data?.notifications_enabled ?? true;
   const toggleNotifications = useMutation({
-    mutationFn: (value) => saveSettings({ notifications_enabled: value }),
+    mutationFn: (/** @type {boolean} */ value) => saveSettings({ notifications_enabled: value }),
     onSuccess: () =>
       Promise.all([
         queryClient.invalidateQueries({ queryKey: ["settings"] }),
@@ -94,7 +95,7 @@ export default function Profile() {
     setInfoNote(null);
     const result = validateProfile(infoForm);
     if (result.error) return setInfoNote({ type: "error", text: result.error });
-    saveInfo.mutate(result.values);
+    saveInfo.mutate(/** @type {{ full_name: string; store_name: string; phone: string; address: string; ruc: string }} */ (result.values));
   };
   const submitRules = (e) => {
     e.preventDefault();
@@ -320,6 +321,7 @@ export default function Profile() {
   );
 }
 
+/** @param {{ icon: React.ElementType; label: string; name: string; value: string | number; onChange: (event: React.ChangeEvent<HTMLInputElement>) => void; hint?: string; inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"] }} props */
 function Field({ icon: Icon, label, name, value, onChange, hint, inputMode }) {
   return (
     <label className="block">

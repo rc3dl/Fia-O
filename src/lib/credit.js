@@ -121,6 +121,15 @@ export function parseAmount(value) {
   return Math.round(Number(cleaned) * 100) / 100;
 }
 
+// Límite individual escrito por el usuario. "" -> null (usa el del negocio); NaN si no es válido.
+// Misma lectura que los demás importes (admite coma decimal) y tope de numeric(10,2).
+export const MAX_AMOUNT = 99999999.99;
+export function parseLimit(value) {
+  if (value === null || value === undefined || String(value).trim() === "") return null;
+  const n = parseAmount(value);
+  return Number.isNaN(n) || n > MAX_AMOUNT ? NaN : n;
+}
+
 // Límite que se aplica a un cliente: el suyo, o el del negocio si no tiene.
 export function effectiveLimit(client, settings) {
   const own = client?.credit_limit;
@@ -223,7 +232,7 @@ export function percentUsed(balance, limit) {
 export function rankDebtors(clients) {
   return clients
     .filter((c) => c.balance > 0)
-    .sort((a, b) => (b.overdue > 0) - (a.overdue > 0) || b.balance - a.balance);
+    .sort((a, b) => Number(b.overdue > 0) - Number(a.overdue > 0) || b.balance - a.balance);
 }
 
 // ¿Al producto le queda poco (o nada)? Stock igual o menor que su mínimo.

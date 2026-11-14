@@ -6,18 +6,20 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { LogIn, Mail, Lock, Loader2 } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
-import GoogleIcon from "@/components/GoogleIcon";
+import OAuthOptions from "@/components/OAuthOptions";
 import { safeReturnTo } from "@/lib/authReturnTo";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { withBase } from "@/lib/withBase";
+import { IS_NATIVE } from "@/native/useIsNative";
+import PasswordInput from "@/components/PasswordInput";
 
-const GOOGLE_ENABLED = import.meta.env.VITE_ENABLE_GOOGLE === "true";
 export default function Login() {
-    const { t } = useLanguage();
+    const { t, language } = useLanguage();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [oauthLoading, setOAuthLoading] = useState(null);
   // Post-login destination (e.g. the MCP OAuth consent page sends users here
   // with returnTo so the grant flow can resume). Same-origin paths only.
   const returnTo = safeReturnTo();
@@ -36,8 +38,25 @@ export default function Login() {
     }
   };
 
-  const handleGoogle = () => {
-    base44.auth.loginWithProvider("google", returnTo);
+  const handleOAuth = async (provider) => {
+    setError("");
+    setOAuthLoading(provider);
+    const names = { google: "Google", apple: "Apple", facebook: "Facebook", azure: "Microsoft" };
+    try {
+      await base44.auth.loginWithProvider(provider, returnTo);
+    } catch (err) {
+      const message = String(err?.message || "");
+      if (/unsupported provider|provider.*(not enabled|disabled)/i.test(message)) {
+        const name = names[provider] || provider;
+        setError(language === "es"
+          ? "El acceso con " + name + " aún no está habilitado. Actívalo en Supabase, en Authentication > Sign In / Providers."
+          : "Sign-in with " + name + " is not enabled yet. Enable it in Supabase under Authentication > Sign In / Providers.");
+      } else {
+        setError(message || (language === "es" ? "No se pudo iniciar el acceso. Inténtalo de nuevo." : "Could not start sign-in. Try again."));
+      }
+    } finally {
+      setOAuthLoading(null);
+    }
   };
 
   return (
@@ -57,27 +76,16 @@ export default function Login() {
         </>
       }
     >
-   {GOOGLE_ENABLED && (
-  <>
-    <Button
-      variant="outline"
-      className="w-full h-12 text-sm font-medium mb-6"
-      onClick={handleGoogle}
-    >
-      <GoogleIcon className="w-5 h-5 mr-2" />
-      {t("Continue with Google")}
-    </Button>
+      <OAuthOptions onSelect={handleOAuth} loadingProvider={oauthLoading || (loading ? "email" : null)} />
 
-    <div className="relative mb-6">
-      <div className="absolute inset-0 flex items-center">
-        <div className="w-full border-t border-border" />
+      <div className="relative mb-6">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-border" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-card px-3 text-muted-foreground">{language === "es" ? "o con tu correo" : "or with email"}</span>
+        </div>
       </div>
-      <div className="relative flex justify-center text-xs uppercase">
-        <span className="bg-card px-3 text-muted-foreground">{t("or")}</span>
-      </div>
-    </div>
-  </>
-)}
 
 
       {error && (
@@ -95,7 +103,9 @@ export default function Login() {
               id="email"
               type="email"
               autoComplete="email"
-              autoFocus
+              autoFocus={!IS_NATIVE}
+              inputMode="email"
+              autoCapitalize="none"
               placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -113,9 +123,9 @@ export default function Login() {
           </div>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
+              
               autoComplete="current-password"
               placeholder="••••••••"
               value={password}
@@ -125,7 +135,7 @@ export default function Login() {
             />
           </div>
         </div>
-        <Button type="submit" className="w-full h-12 font-medium" disabled={loading}>
+        <Button type="submit" className="w-full h-12 font-medium" disabled={loading || Boolean(oauthLoading)}>
           {loading ? (
             <>
               <Loader2 className="w-4 h-4 mr-2 animate-spin" />

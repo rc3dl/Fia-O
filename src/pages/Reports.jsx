@@ -4,11 +4,12 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, Responsive
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { TrendingUp, Banknote, Users, AlertTriangle, FileText, FileSpreadsheet, ChevronLeft, ChevronRight } from "lucide-react";
-import { fetchLedger } from "@/lib/creditApi";
+import { fetchLedger } from "@/api/creditApi";
 import { money, todayPanama, shortYmd } from "@/lib/credit";
 import { PRESETS, presetRange, buildReport, filterLabel, paginate, pageWindow, reportTables } from "@/lib/reports";
 import { exportExcel, exportPdf } from "@/lib/reportExport";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { IS_NATIVE } from "@/native/useIsNative";
 
 const card = { backgroundColor: "var(--surface)" };
 const fieldStyle = { backgroundColor: "var(--white)", borderColor: "var(--border-cream)", color: "var(--text)" };
@@ -190,7 +191,7 @@ export default function Reports() {
               <div data-tour="reports-cards" className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                 <div className="p-4 rounded-2xl" style={card}>
                   <TrendingUp className="w-5 h-5 mb-2" style={{ color: "var(--accent-text)" }} />
-                  <p className="text-[11px] font-semibold tracking-wide" style={{ color: "var(--text-muted)" }}>{t("TOTAL ACTIVE CREDIT")}</p>
+                  <p className="text-[11px] font-semibold tracking-wide" style={{ color: "var(--text-muted)" }}>{t("ACTIVE CREDIT TODAY")}</p>
                   <p className="font-bold text-xl" style={{ color: "var(--text)" }}>{money(c.activeCredit)}</p>
                   <Change change={c.activeCreditChange} suffix={t("since the start of the period")} upIsGood={false} />
                 </div>
@@ -202,7 +203,7 @@ export default function Reports() {
                 </div>
                 <div className="p-4 rounded-2xl" style={card}>
                   <AlertTriangle className="w-5 h-5 mb-2" style={{ color: "var(--accent-text)" }} />
-                  <p className="text-[11px] font-semibold tracking-wide" style={{ color: "var(--text-muted)" }}>{t("PENDING BALANCES")}</p>
+                  <p className="text-[11px] font-semibold tracking-wide" style={{ color: "var(--text-muted)" }}>{t("PENDING BALANCES TODAY")}</p>
                   <p className="font-bold text-xl" style={{ color: "var(--text)" }}>{money(c.pending)}</p>
                   <p className="text-xs font-semibold mt-1" style={{ color: c.overdueCustomers > 0 ? "var(--bad-text)" : "var(--ok-text)" }}>
                     {c.overdueCustomers > 0
@@ -276,6 +277,25 @@ export default function Reports() {
                   <p className="py-8 text-center text-sm" style={{ color: "var(--text-faint)" }}>{t("No transactions in this period.")}</p>
                 ) : (
                   <>
+                    {IS_NATIVE ? (
+                      <ul className="space-y-2">
+                        {table.items.map((item) => (
+                          <li key={item.id} className="p-3 rounded-2xl flex items-center gap-3" style={{ backgroundColor: "var(--white)", border: "1px solid var(--border-cream)" }}>
+                            <div className="min-w-0 flex-1">
+                              <p className="text-sm font-bold truncate" style={{ color: "var(--text)" }}>{item.name}</p>
+                              <p className="text-xs truncate" style={{ color: "var(--text-muted)" }}>{t(item.description)}</p>
+                              <p className="text-[11px] mt-0.5" style={{ color: "var(--text-faint)" }}>{shortYmd(item.date, language === "es" ? "es-PA" : "en-GB")}</p>
+                            </div>
+                            <div className="text-right flex flex-col items-end gap-1.5">
+                              <span className="text-sm font-extrabold whitespace-nowrap" style={{ color: item.kind === "pago" ? "var(--ok-text)" : "var(--text)" }}>
+                                {item.kind === "pago" ? "− " : ""}{money(item.amount)}
+                              </span>
+                              <StatusBadge status={item.status} />
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : (
                     <div className="overflow-x-auto">
                       <table className="w-full">
                         <thead>
@@ -302,6 +322,7 @@ export default function Reports() {
                         </tbody>
                       </table>
                     </div>
+                    )}
 
                     <div className="flex flex-wrap items-center justify-between gap-3 mt-4">
                       <p className="text-xs" style={{ color: "var(--text-muted)" }}>

@@ -111,3 +111,492 @@
   --warn-bg: #4A3512; --warn-text: #F2C766;
   --bad-bg: #4D2020;  --bad-text: #F4A6A6;
 }
+
+/* =====================================================================
+   FIA'O · Android
+   Todo lo de abajo cuelga de html.is-native (la clase la agrega main.jsx
+   solo dentro de la app). En la web nada de esto se aplica.
+   ===================================================================== */
+html.is-native {
+  --sat: var(--safe-area-inset-top, env(safe-area-inset-top, 0px));
+  --sab: var(--safe-area-inset-bottom, env(safe-area-inset-bottom, 0px));
+  --dock-h: 60px;
+  --dock-bg: #2D2926;
+  --dock-fg: #F4EAD5;
+  --ease-out: cubic-bezier(0.2, 0.9, 0.25, 1);
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  overflow-x: hidden;
+  background-color: var(--page-bg);
+  font-size: 14.5px; /* todo lo medido en rem se ve ~9% más pequeño: más cómodo en el teléfono */
+}
+html.is-native.dark { --dock-bg: #3A302B; }
+html.is-native body {
+  background-color: var(--page-bg);
+  -webkit-touch-callout: none;
+}
+html.is-native h1, html.is-native h2, html.is-native h3, html.is-native p, html.is-native button, html.is-native nav, html.is-native header {
+  -webkit-user-select: none; user-select: none;
+}
+html.is-native input, html.is-native textarea, html.is-native select { -webkit-user-select: text; user-select: text; font-size: 15px; }
+
+/* Espacio para que la barra inferior no tape contenido */
+/* Arriba va la barra superior fija (logo, avisos y perfil): el contenido empieza justo debajo */
+html.is-native main { padding-top: var(--sat); }
+html.is-native.has-dock main { padding-top: calc(var(--sat) + 62px); }
+html.is-native.has-dock main { padding-bottom: calc(var(--dock-h) + var(--sab) + 30px); }
+html.is-native main h1 { font-size: 1.6rem; line-height: 1.12; letter-spacing: -0.02em; }
+html.is-native main > div { padding-top: 0.25rem; padding-bottom: 0.75rem; }
+
+/* Botones cómodos de tocar + respuesta al pulsar */
+html.is-native main button[class*="px-"]:not([class*="w-"]) { min-height: 38px; }
+html.is-native button, html.is-native a { transition: transform 0.12s var(--ease-out), opacity 0.15s; }
+html.is-native button:active:not(:disabled), html.is-native a:active { transform: scale(0.97); }
+
+/* Cada pantalla entra con un suave deslizamiento */
+html.is-native main { animation: fiao-rise 0.26s var(--ease-out) both; }
+
+/* ---- Campana de avisos (va en el encabezado del Dashboard) ---- */
+/* ---- Barra superior (Android) ---- */
+.fiao-topbar {
+  position: fixed; top: 0; left: 0; right: 0; z-index: 34;
+  display: flex; align-items: center; gap: 8px;
+  padding: calc(var(--sat) + 6px) 12px 8px;
+  background-color: var(--navbar-bg); border-radius: 0 0 22px 22px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.18);
+}
+.fiao-topbar-mid { flex: 1; min-width: 0; display: flex; }
+.fiao-icon-btn { width: 40px; height: 40px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; background-color: rgba(255, 255, 255, 0.16); flex-shrink: 0; }
+/* Indicador de conexión y sincronización: solo aparece si hay algo que saber */
+.fiao-pill {
+  height: 32px; padding: 0 11px; display: flex; align-items: center; gap: 6px; border-radius: 9999px; max-width: 100%;
+  font-size: 12px; font-weight: 800; color: #fff; white-space: nowrap;
+  background-color: var(--dock-bg); animation: fiao-fade 0.2s both; transition: transform 0.12s;
+}
+.fiao-pill span { overflow: hidden; text-overflow: ellipsis; }
+.fiao-pill-warn { background-color: #B45309; }
+.fiao-pill-update { background-color: #166534; }
+
+html.is-native [data-tour="bell"] > button {
+  width: 40px; height: 40px; border-radius: 9999px; background-color: rgba(255, 255, 255, 0.16);
+}
+html.is-native [data-tour="bell"] > button svg { width: 22px; height: 22px; }
+/* Panel de avisos: a lo ancho, bajo la barra */
+html.is-native [data-tour="bell"] [role="dialog"] {
+  position: fixed; left: 12px; right: 12px; top: calc(var(--sat) + 62px);
+  width: auto; max-height: 60vh; overflow-y: auto; margin: 0; z-index: 60;
+  border-radius: 24px;
+}
+
+/* ---- Barra inferior flotante ---- */
+.fiao-dock {
+  position: fixed; left: 12px; right: 12px; bottom: calc(var(--sab) + 10px); z-index: 40;
+  display: flex; align-items: center; gap: 4px; padding: 6px;
+  border-radius: 30px; background-color: var(--dock-bg);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.38), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  transition: transform 0.3s var(--ease-out), opacity 0.2s;
+  animation: fiao-dock-in 0.5s var(--ease-out) both;
+}
+.fiao-tab {
+  flex: 1 1 0; min-width: 0; height: 48px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 24px; color: var(--dock-fg); opacity: 0.7;
+  transition: flex-grow 0.38s cubic-bezier(0.3, 1.25, 0.4, 1), background-color 0.25s, color 0.25s, opacity 0.2s, transform 0.12s;
+}
+.fiao-tab.is-active { flex-grow: 2.7; background-color: #F9D103; color: #2D2926; opacity: 1; gap: 6px; }
+.fiao-tab-label {
+  max-width: 0; opacity: 0; overflow: hidden; white-space: nowrap;
+  font-size: 12.5px; font-weight: 800; letter-spacing: -0.01em;
+  transition: max-width 0.38s var(--ease-out), opacity 0.2s;
+}
+.fiao-tab.is-active .fiao-tab-label { max-width: 86px; opacity: 1; }
+html[data-kb] .fiao-dock { transform: translateY(calc(100% + 40px)); opacity: 0; pointer-events: none; }
+html[data-kb] [data-tour="clients-new"] { opacity: 0; pointer-events: none; }
+
+/* ---- Hojas inferiores (Más, confirmaciones y ventanas de Clientes/Productos) ---- */
+.fiao-sheet-backdrop {
+  position: fixed; inset: 0; z-index: 60; display: flex; align-items: flex-end;
+  background-color: rgba(0, 0, 0, 0.5); animation: fiao-fade 0.2s both;
+}
+.fiao-sheet {
+  width: 100%; max-height: calc(100dvh - var(--sat) - 24px); overflow-y: auto;
+  padding: 10px 20px calc(24px + var(--sab));
+  border-radius: 30px 30px 0 0; background-color: var(--white);
+  box-shadow: 0 -12px 40px rgba(0, 0, 0, 0.3); animation: fiao-sheet 0.34s var(--ease-out) both;
+}
+.fiao-grab { display: block; width: 42px; height: 5px; border-radius: 9999px; margin: 0 auto 14px; background-color: var(--border-cream); }
+.fiao-sheet-title { font-family: Poppins, sans-serif; font-weight: 800; font-size: 1.25rem; color: var(--text); margin-bottom: 16px; }
+html.is-native .fixed.inset-0:has(> [role="dialog"]) { align-items: flex-end !important; padding: 0 !important; animation: fiao-fade 0.2s both; }
+html.is-native .fixed.inset-0 > [role="dialog"] {
+  max-width: 100% !important; width: 100%;
+  max-height: calc(100dvh - var(--sat) - 24px) !important;
+  border-radius: 30px 30px 0 0 !important;
+  padding-bottom: calc(1.5rem + var(--sab)) !important;
+  animation: fiao-sheet 0.34s var(--ease-out) both;
+}
+html.is-native .fixed.inset-0 > [role="dialog"]::before {
+  content: ""; display: block; width: 42px; height: 5px; border-radius: 9999px;
+  margin: -6px auto 16px; background-color: var(--border-cream);
+}
+.fiao-tile {
+  display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 14px 6px;
+  border-radius: 22px; background-color: var(--surface); border: 1px solid var(--border-cream);
+}
+.fiao-tile-icon { width: 42px; height: 42px; border-radius: 14px; display: flex; align-items: center; justify-content: center; background-color: #B91C1C; flex-shrink: 0; }
+.fiao-row {
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 14px 16px; min-height: 52px;
+  border-radius: 18px; background-color: var(--surface); border: 1px solid var(--border-cream);
+  font-size: 14px; font-weight: 600; color: var(--text);
+}
+.fiao-btn { height: 50px; border-radius: 9999px; font-weight: 800; font-size: 14px; }
+.fiao-btn-ghost { background-color: var(--surface); color: var(--text); border: 1px solid var(--border-cream); }
+.fiao-toast {
+  position: fixed; left: 50%; transform: translateX(-50%); z-index: 90;
+  bottom: calc(var(--dock-h) + var(--sab) + 30px);
+  padding: 10px 18px; border-radius: 9999px; font-size: 13px; font-weight: 700;
+  background-color: #2D2926; color: #fff; box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
+  animation: fiao-rise 0.25s var(--ease-out) both;
+}
+
+/* ---- Identidad: libreta de fiados (puntadas, resaltador, tarjetas) ---- */
+.fiao-hero { border-radius: 28px; padding: 20px 18px 18px; box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18); animation: fiao-rise 0.5s var(--ease-out) 0.05s both; }
+.fiao-stitch { position: relative; }
+.fiao-stitch::after {
+  content: ""; position: absolute; inset: 8px; border-radius: 23px; pointer-events: none;
+  border: 1.5px dashed rgba(185, 28, 28, 0.28);
+}
+.dark .fiao-stitch::after { border-color: rgba(240, 137, 127, 0.3); }
+.fiao-marker { background: linear-gradient(transparent 60%, rgba(249, 209, 3, 0.9) 60%, rgba(249, 209, 3, 0.9) 92%, transparent 92%); padding: 0 0.12em; }
+.fiao-snap { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 6px; scrollbar-width: none; }
+.fiao-snap::-webkit-scrollbar { display: none; }
+.fiao-debtor { flex: 0 0 76%; scroll-snap-align: start; border-radius: 26px; padding: 16px; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12); }
+.fiao-quick { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: 24px; min-height: 68px; box-shadow: 0 6px 16px rgba(0, 0, 0, 0.1); }
+.fiao-client { padding: 14px 16px; border-radius: 24px; background-color: var(--surface); border: 1px solid var(--border-cream); animation: fiao-rise 0.4s var(--ease-out) both; }
+.fiao-skeleton { animation: fiao-pulse 1.2s ease-in-out infinite; }
+.fiao-pop { animation: fiao-pop 0.6s var(--ease-out) both; }
+
+/* ---- Ajustes por pantalla ---- */
+html.is-native [data-tour="clients-filters"] { flex-wrap: nowrap !important; overflow-x: auto; scrollbar-width: none; margin-inline: -4px; padding: 2px 4px; }
+html.is-native [data-tour="clients-filters"]::-webkit-scrollbar { display: none; }
+html.is-native [data-tour="clients-filters"] > button { flex-shrink: 0; white-space: nowrap; }
+html.is-native [data-tour="clients-main"], html.is-native [data-tour="clients-collections"] { padding: 18px !important; border-radius: 28px !important; }
+html.is-native [data-tour="products-content"] { padding: 16px !important; border-radius: 28px !important; }
+/* "Nuevo cliente" pasa a botón flotante sobre la barra inferior */
+html.is-native [data-tour="clients-new"] {
+  position: fixed; right: 16px; bottom: calc(var(--dock-h) + var(--sab) + 28px); z-index: 35;
+  height: 48px; padding: 0 20px; box-shadow: 0 12px 26px rgba(0, 0, 0, 0.35); transition: opacity 0.2s, transform 0.12s;
+}
+
+@keyframes fiao-rise { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: none; } }
+@keyframes fiao-fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fiao-sheet { from { transform: translateY(100%); } to { transform: none; } }
+@keyframes fiao-dock-in { from { transform: translateY(120%); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes fiao-pulse { 50% { opacity: 0.45; } }
+@keyframes fiao-pop { from { opacity: 0; transform: scale(0.82); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) {
+  html.is-native *, html.is-native *::before, html.is-native *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}
+
+/* ---- Pantallas de acceso (Android) ---- */
+.fiao-auth { min-height: 100dvh; display: flex; flex-direction: column; background-color: var(--page-bg); }
+.fiao-auth-hero {
+  position: relative; display: flex; align-items: center; justify-content: center;
+  padding: calc(var(--sat) + 24px) 24px 52px; max-height: 240px; overflow: hidden;
+  transition: padding 0.3s var(--ease-out), max-height 0.3s var(--ease-out);
+}
+.fiao-auth-logo { height: 56px; width: auto; transition: height 0.3s var(--ease-out); animation: fiao-pop 0.6s var(--ease-out) both; }
+.fiao-auth-back {
+  position: absolute; left: 14px; top: calc(var(--sat) + 12px); width: 44px; height: 44px; border-radius: 9999px;
+  display: flex; align-items: center; justify-content: center; color: #fff; background-color: rgba(255, 255, 255, 0.16);
+}
+.fiao-auth-panel {
+  flex: 1; margin-top: -30px; padding: 26px 22px calc(26px + var(--sab));
+  border-radius: 32px 32px 0 0; box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.2);
+  animation: fiao-rise 0.5s var(--ease-out) 0.05s both;
+}
+/* Con el teclado abierto la cabecera se encoge para dejar sitio al formulario */
+html[data-kb] .fiao-auth-hero { padding-top: calc(var(--sat) + 12px); padding-bottom: 40px; }
+html[data-kb] .fiao-auth-logo { height: 36px; }
+html.is-native .fiao-auth-panel button[type="submit"] { font-size: 15px; border-radius: 9999px; }
+
+/* ---- Cifras y tarjetas pequeñas: nada se sale en pantallas de 360 px ---- */
+html.is-native [data-tour="reports-cards"] p { overflow-wrap: anywhere; }
+html.is-native [data-tour="reports-cards"] p.text-xl { font-size: 1.05rem; }
+html.is-native [role="dialog"] .grid-cols-3 { gap: 0.4rem; }
+html.is-native [role="dialog"] .grid-cols-3 > div { min-width: 0; padding: 0.55rem 0.35rem; }
+html.is-native [role="dialog"] .grid-cols-3 > div p { overflow-wrap: anywhere; }
+html.is-native [role="dialog"] .grid-cols-3 > div p.font-bold { font-size: 0.8rem; }
+
+/* ---- Acceso (Login y Registro) más amable: más aire, formas suaves y una cabecera con calidez ---- */
+.fiao-auth-hero { flex-direction: column; gap: 10px; padding: calc(var(--sat) + 30px) 24px 58px; max-height: 270px; }
+.fiao-auth-hero::before {
+  content: ""; position: absolute; width: 230px; height: 230px; right: -70px; top: -70px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(249, 209, 3, 0.3), transparent 68%);
+}
+.fiao-auth-hero::after {
+  content: ""; position: absolute; width: 210px; height: 210px; left: -90px; bottom: -100px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.16), transparent 70%);
+}
+.fiao-auth-logo, .fiao-auth-tagline { position: relative; z-index: 1; }
+.fiao-auth-tagline { font-size: 13px; font-weight: 600; color: rgba(255, 255, 255, 0.86); text-align: center; transition: opacity 0.2s; }
+html[data-kb] .fiao-auth-tagline { display: none; }
+.fiao-auth-panel { margin-top: -34px; padding: 30px 24px calc(30px + var(--sab)); border-radius: 36px 36px 0 0; box-shadow: 0 -8px 26px rgba(0, 0, 0, 0.14); }
+html.is-native .fiao-auth-panel .space-y-4 > * + * { margin-top: 1.25rem; }
+html.is-native .fiao-auth-panel .space-y-2 > * + * { margin-top: 0.5rem; }
+html.is-native .fiao-auth-panel label { font-size: 0.86rem; font-weight: 600; }
+html.is-native .fiao-auth-panel input { height: 50px; border-radius: 16px; }
+html.is-native .fiao-auth-panel button[type="submit"] { height: 50px; margin-top: 0.4rem; }
+html.is-native .fiao-auth-panel [role="alert"] { border-radius: 14px; }
+html.is-native .fiao-auth-panel a { padding-block: 0.35rem; display: inline-block; }
+
+
+/* ---- Autenticación web: todo el formulario visible al 100% de zoom ---- */
+.auth-page {
+  overflow-y: auto;
+  min-height: 100vh;
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding: clamp(10px, 2vh, 18px) clamp(12px, 2vw, 24px);
+}
+.auth-card { width: 100%; max-width: 64rem; }
+.auth-main { min-width: 0; align-items: flex-start !important; }
+.auth-main-inner { min-width: 0; margin-block: auto; }
+.auth-content { min-width: 0; }
+.auth-footer {
+  display: flex;
+  width: 100%;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  column-gap: 0.25rem;
+  row-gap: 0.2rem;
+  text-align: center;
+}
+.auth-footer > a { display: inline-flex; align-items: center; }
+.auth-legal { flex-shrink: 0; }
+
+/* Los proveedores mantienen la respuesta al cursor sin perder contraste en ningún tema. */
+.oauth-provider-button {
+  color: #2D2926 !important;
+  background-color: #FFFFFF !important;
+  border-color: #D8DDE5;
+  transition: transform 180ms ease, box-shadow 180ms ease, background-color 180ms ease, border-color 180ms ease;
+}
+.oauth-provider-button:hover {
+  color: #2D2926 !important;
+  background-color: #F8FAFC !important;
+  border-color: #CBD5E1;
+  box-shadow: 0 4px 10px rgba(45, 41, 38, 0.07);
+  transform: translateY(-1px);
+}
+.oauth-provider-button:active { transform: translateY(0) scale(0.99); }
+.oauth-provider-button:disabled { transform: none; box-shadow: none; }
+
+@media (min-width: 1024px) {
+  .auth-card {
+    height: min(700px, calc(100dvh - 28px));
+    min-height: min(560px, calc(100dvh - 28px));
+  }
+  .auth-sidebar { padding: clamp(22px, 3vw, 40px) !important; }
+  .auth-sidebar-heading {
+    margin-top: clamp(8px, 1.5vh, 16px);
+    font-size: clamp(1.65rem, 3.3vh, 2.25rem);
+  }
+  .auth-sidebar-copy { margin-top: clamp(10px, 1.5vh, 20px); }
+  .auth-sidebar-highlights {
+    margin-top: clamp(14px, 2vh, 28px);
+    gap: clamp(8px, 1.35vh, 16px);
+  }
+  .auth-main {
+    overflow-y: auto;
+    padding: clamp(14px, 2.5vh, 28px) clamp(22px, 3vw, 48px);
+    scrollbar-width: thin;
+  }
+  .auth-main-inner { width: min(100%, 28rem); }
+  .auth-topbar { margin-bottom: clamp(10px, 1.8vh, 22px); }
+  .auth-title-block { margin-bottom: clamp(12px, 1.8vh, 22px); }
+  .auth-title-block > div:first-child {
+    width: clamp(40px, 5.5vh, 48px);
+    height: clamp(40px, 5.5vh, 48px);
+    margin-bottom: clamp(8px, 1.3vh, 16px);
+  }
+  .auth-title-block h1 { font-size: clamp(1.55rem, 3.5vh, 1.875rem); line-height: 1.15; }
+  .auth-title-block > p { margin-top: clamp(4px, 0.8vh, 8px); }
+  .auth-mobile-logo { display: none; }
+  .auth-content > section { margin-bottom: clamp(10px, 1.8vh, 20px); }
+  .auth-content > section > p:first-child { margin-bottom: clamp(6px, 1vh, 12px); }
+  .auth-content > section > div.grid { gap: clamp(6px, 0.9vh, 10px); }
+  .auth-content > section > p:last-child { margin-top: clamp(5px, 0.9vh, 8px); }
+  .auth-content > div.relative.mb-6 { margin-bottom: clamp(10px, 1.5vh, 20px); }
+  .auth-content form.space-y-4 > * + * { margin-top: clamp(9px, 1.3vh, 14px); }
+  .auth-content form .space-y-2 > * + * { margin-top: clamp(4px, 0.7vh, 7px); }
+  .auth-content form input { height: clamp(42px, 5.4vh, 48px); }
+  .auth-content form button[type="submit"] { height: clamp(44px, 5.7vh, 48px); }
+  .auth-footer { margin-top: clamp(10px, 1.5vh, 18px); }
+  .auth-legal {
+    margin-top: clamp(10px, 1.5vh, 18px);
+    padding-top: clamp(8px, 1.2vh, 14px);
+  }
+}
+
+@media (max-height: 760px) and (min-width: 1024px) {
+  .auth-sidebar { padding: 18px 26px !important; }
+  .auth-sidebar-heading { font-size: clamp(1.45rem, 3vh, 1.9rem); }
+  .auth-sidebar-copy { margin-top: 9px; font-size: 0.82rem; line-height: 1.4; }
+  .auth-sidebar-highlights { margin-top: 12px; gap: 8px; }
+  .auth-sidebar-highlights li { font-size: 0.8rem; }
+  .auth-main { padding-top: 10px; padding-bottom: 10px; }
+  .auth-topbar { margin-bottom: 8px; }
+  .auth-title-block { margin-bottom: 10px; }
+  .auth-title-block > div:first-child { width: 40px; height: 40px; margin-bottom: 7px; }
+  .auth-title-block h1 { font-size: 1.55rem; }
+  .auth-content > section { margin-bottom: 9px; }
+  .auth-content > section > p:first-child { margin-bottom: 6px; }
+  .auth-content > section > p:last-child { margin-top: 4px; font-size: 10px; line-height: 1.25; }
+  .auth-content .oauth-provider-button { min-height: 40px; padding-top: 7px; padding-bottom: 7px; }
+  .auth-content > div.relative.mb-6 { margin-bottom: 9px; }
+  .auth-content form.space-y-4 > * + * { margin-top: 8px; }
+  .auth-content form .space-y-2 > * + * { margin-top: 4px; }
+  .auth-content form input { height: 42px; }
+  .auth-content form button[type="submit"] { height: 44px; }
+  .auth-footer { margin-top: 9px; }
+  .auth-legal { margin-top: 9px; padding-top: 7px; }
+}
+
+@media (max-width: 1023px) {
+  .auth-card { max-width: 30rem; }
+  .auth-main { padding: clamp(16px, 3vh, 28px) clamp(18px, 4vw, 32px); }
+  .auth-topbar { margin-bottom: clamp(14px, 2.2vh, 22px); }
+  .auth-title-block { margin-bottom: clamp(14px, 2.2vh, 22px); }
+  .auth-mobile-logo { margin-bottom: clamp(12px, 2vh, 20px); }
+}
+
+@media (max-height: 760px) and (max-width: 1023px) {
+  .auth-page { align-items: flex-start; padding-top: 10px; padding-bottom: 10px; }
+  .auth-main { padding-top: 13px; padding-bottom: 13px; }
+  .auth-mobile-logo { display: none; }
+  .auth-topbar { margin-bottom: 10px; }
+  .auth-title-block { margin-bottom: 10px; }
+  .auth-title-block > div:first-child { width: 40px; height: 40px; margin-bottom: 7px; }
+  .auth-title-block h1 { font-size: 1.55rem; }
+  .auth-content > section { margin-bottom: 9px; }
+  .auth-content > section > p:first-child { margin-bottom: 6px; }
+  .auth-content > section > p:last-child { margin-top: 4px; font-size: 10px; line-height: 1.25; }
+  .auth-content .oauth-provider-button { min-height: 40px; padding-top: 7px; padding-bottom: 7px; }
+  .auth-content > div.relative.mb-6 { margin-bottom: 9px; }
+  .auth-content form.space-y-4 > * + * { margin-top: 8px; }
+  .auth-content form .space-y-2 > * + * { margin-top: 4px; }
+  .auth-content form input { height: 42px; }
+  .auth-content form button[type="submit"] { height: 44px; }
+  .auth-footer { margin-top: 9px; }
+  .auth-legal { margin-top: 9px; padding-top: 7px; }
+}
+
+
+/* Ajuste base para tablets y móviles: prioriza compactar espacios, no el texto. */
+@media (max-width: 1023px) {
+  .auth-main { padding: clamp(14px, 2.4vh, 22px) clamp(18px, 4vw, 32px); }
+  .auth-topbar { margin-bottom: clamp(10px, 1.8vh, 16px); }
+  .auth-mobile-logo { margin-bottom: clamp(10px, 1.8vh, 14px); }
+  .auth-mobile-logo img { height: 40px; }
+  .auth-title-block { margin-bottom: clamp(10px, 1.8vh, 16px); }
+  .auth-title-block > div:first-child {
+    width: 44px;
+    height: 44px;
+    margin-bottom: 10px;
+  }
+  .auth-title-block h1 { font-size: clamp(1.65rem, 3.5vh, 1.875rem); }
+  .auth-title-block > p { margin-top: 5px; }
+  .auth-content > section { margin-bottom: 12px; }
+  .auth-content > section > p:first-child { margin-bottom: 8px; }
+  .auth-content > section > div.grid { gap: 8px; }
+  .auth-content > section > p:last-child { margin-top: 5px; font-size: 10px; line-height: 1.3; }
+  .auth-content .oauth-provider-button { min-height: 42px; padding-top: 8px; padding-bottom: 8px; }
+  .auth-content > div.relative.mb-6 { margin-bottom: 12px; }
+  .auth-content form.space-y-4 > * + * { margin-top: 10px; }
+  .auth-content form .space-y-2 > * + * { margin-top: 5px; }
+  .auth-content form input { height: 44px; }
+  .auth-content form button[type="submit"] { height: 46px; }
+  .auth-footer { margin-top: 12px; }
+  .auth-legal { margin-top: 12px; padding-top: 9px; }
+}
+
+
+/* ---- Tema de autenticación web: sigue el tema activo de FIA'O ---- */
+.auth-page {
+  background-color: hsl(var(--background)) !important;
+  color: hsl(var(--foreground));
+}
+.auth-card {
+  background-color: hsl(var(--card)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+.auth-main {
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--foreground));
+}
+.auth-title-block h1 {
+  color: hsl(var(--foreground)) !important;
+}
+.auth-title-block > p,
+.auth-back-link {
+  color: hsl(var(--muted-foreground)) !important;
+}
+.auth-back-link:hover {
+  color: hsl(var(--foreground)) !important;
+}
+.auth-footer {
+  color: hsl(var(--muted-foreground)) !important;
+}
+.auth-footer a {
+  color: hsl(var(--primary)) !important;
+}
+.auth-legal {
+  border-color: hsl(var(--border)) !important;
+  color: hsl(var(--muted-foreground)) !important;
+}
+.auth-legal a:hover {
+  color: hsl(var(--foreground)) !important;
+}
+.auth-theme-toggle,
+.auth-language-toggle {
+  color: hsl(var(--muted-foreground));
+  background-color: hsl(var(--card));
+  border-color: hsl(var(--border));
+}
+.auth-theme-toggle:hover,
+.auth-language-toggle:hover {
+  color: hsl(var(--foreground));
+  background-color: hsl(var(--accent));
+  border-color: hsl(var(--border));
+}
+.auth-theme-toggle:focus-visible,
+.auth-language-toggle:focus-visible {
+  outline: 2px solid hsl(var(--ring));
+  outline-offset: 2px;
+}
+
+/* Los botones sociales también cambian de superficie en el modo oscuro. */
+.oauth-provider-button {
+  color: hsl(var(--foreground)) !important;
+  background-color: hsl(var(--card)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+.oauth-provider-button:hover {
+  color: hsl(var(--foreground)) !important;
+  background-color: hsl(var(--accent)) !important;
+  border-color: hsl(var(--border)) !important;
+}
+.dark .auth-card {
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.42);
+}
+
+
+/* La autenticación web reutiliza la paleta original de FIA'O en ambos temas. */
+.auth-sidebar {
+  background-color: var(--navbar-bg) !important;
+  transition: background-color 180ms ease;
+}
+.auth-glow-red {
+  background-color: color-mix(in srgb, var(--navbar-bg) 10%, transparent);
+}

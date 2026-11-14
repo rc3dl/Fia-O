@@ -1,5 +1,5 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
-import { useAuth } from "@/lib/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import { isProfileComplete } from "@/lib/settings";
 
 // Portero: si el perfil aún no está completo, manda a /setup antes de dejar entrar a la app.

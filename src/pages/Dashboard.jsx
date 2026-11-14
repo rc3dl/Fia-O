@@ -4,10 +4,12 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Wallet, Package, Users, BarChart3, Mail, TrendingUp, Banknote, AlertTriangle, ArrowRight } from "lucide-react";
-import { useAuth } from "@/lib/AuthContext";
-import { fetchDashboard } from "@/lib/dashboardApi";
+import { useAuth } from "@/contexts/AuthContext";
+import { fetchDashboard } from "@/api/dashboardApi";
 import { money, summarize, rankDebtors, relativeDay, todayPanama, firstName } from "@/lib/credit";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { IS_NATIVE } from "@/native/useIsNative";
+import MobileDashboard from "@/native/MobileDashboard";
 
 const QUICK_LINKS = [
   { label: "Credit", path: "/credit", icon: Wallet, desc: "Manage customer debts and register payments." },
@@ -50,6 +52,22 @@ export default function Dashboard() {
     "/clients": t(`${clients.length} ${clients.length === 1 ? "customer" : "customers"}`),
     "/products": lowStock.length > 0 ? t(`${lowStock.length} running low`) : "",
   };
+
+  // Android: presentación propia para el teléfono (mismos datos, otro diseño).
+  if (IS_NATIVE) {
+    return (
+      <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--page-bg)" }}>
+        <Navbar />
+        <main className="flex-1">
+          <MobileDashboard
+            name={name} isLoading={isLoading} isError={isError} error={error} refetch={refetch}
+            overview={overview} debtors={debtors} entries={entries} names={names}
+            lowStock={lowStock} clients={clients} today={today}
+          />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col" style={{ backgroundColor: "var(--page-bg)" }}>

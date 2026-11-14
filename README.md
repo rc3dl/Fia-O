@@ -6,7 +6,7 @@ FIA'O is a web app for small shops in Panama that sell on credit (*fiado*). It r
 
 It is a student project, built to be free to run: the whole stack below works on free plans.
 
-> The interface is currently in English. Amounts are shown in balboas (`B/.`) and dates use the Panama time zone.
+> The interface is available in Spanish (default) and English. Amounts are shown in balboas (`B/.`) and dates use the Panama time zone.
 
 ---
 
@@ -33,7 +33,7 @@ It is a student project, built to be free to run: the whole stack below works on
 | Screen | What it does |
 |---|---|
 | **Landing page** | Public home page that explains the product. |
-| **Sign up / Log in** | Email and password, with a 6-digit code sent by email to verify the account, and password reset by email. Google sign-in is optional. |
+| **Sign up / Log in** | Email and password, with a 6-digit code sent by email to verify the account, and password reset by email. Google, Apple, Facebook, and Microsoft sign-in are available when enabled in Supabase. |
 | **Setup** | First-time screen shown before the dashboard: asks for your name, store name, optional phone/RUC/address, and your credit rules. It only appears while the profile is incomplete. |
 | **Dashboard** | Live numbers (outstanding debt, payments today, customers with debt, overdue accounts), who to collect first, recent activity, low-stock alert and quick links. |
 | **Clients** | Create, edit, search, filter (On Time / Pending / Overdue) and archive customers. Prepares a WhatsApp reminder for customers who owe. |
@@ -83,15 +83,15 @@ There is no custom server: the browser talks directly to Supabase, and Row Level
 
 ### Prerequisites
 
-- [Node.js](https://nodejs.org) 20.19 or newer (the current LTS is recommended)
+- [Node.js](https://nodejs.org) 22 or newer (the current LTS is recommended)
 - [Git](https://git-scm.com)
 - A free [Supabase](https://supabase.com) account
 
 ### 1. Clone and install
 
 ```bash
-git clone https://github.com/rc3dl/Fia-O.git
-cd Fia-O
+git clone https://github.com/rc3dl/Fiao.test.git
+cd Fiao.test
 npm install
 ```
 
@@ -106,7 +106,6 @@ Create a file named `.env.local` in the project root (next to `package.json`):
 ```bash
 VITE_SUPABASE_URL=https://YOUR-PROJECT.supabase.co
 VITE_SUPABASE_ANON_KEY=your-public-anon-key
-VITE_ENABLE_GOOGLE=false
 ```
 
 This file is ignored by Git. Never commit it.
@@ -140,7 +139,9 @@ Create a new project at [supabase.com](https://supabase.com). In **Project Setti
 
 ### 2. Create the database
 
-Open **SQL Editor → New query**, paste the whole content of [`supabase/schema.sql`](supabase/schema.sql) and press **Run**. It creates all tables, the security policies, and the database rules (see [Database overview](#database-overview)).
+> **Warning:** pasting the whole `schema.sql` is only for a **new, empty** project. For a database that already exists, do not re-run it: review the real schema and apply the numbered migrations once, in order. For the safe offline-sales and archive protections, apply `001_idempotent_fiado_sale.sql` first and `003_sync_and_archive_guards.sql` second. Migration `003_sync_and_archive_guards.sql` also installs the safe whole-unit product guard; `002_whole_units_and_fifo_view.sql` can be used separately when only that guard is needed. These SQL files are prepared in the repository; they are **not** applied automatically to your Supabase project.
+
+For a new project, open **SQL Editor → New query**, paste the whole content of [`supabase/schema.sql`](supabase/schema.sql) and press **Run**. It creates all tables, the security policies, and the database rules (see [Database overview](#database-overview)).
 
 ### 3. Configure authentication
 
@@ -183,9 +184,16 @@ In **Authentication**:
    - **Site URL:** `http://localhost:5173` while developing (your production URL once deployed).
    - **Redirect URLs:** add `http://localhost:5173/**` and `https://YOUR-APP.vercel.app/**`.
 
-### 4. Google sign-in (optional)
+### 4. Social sign-in (optional)
 
-The "Continue with Google" button is hidden by default. To enable it, create OAuth credentials in Google Cloud, add Supabase's callback URL, enable **Authentication → Providers → Google**, and set `VITE_ENABLE_GOOGLE=true`.
+FIA'O includes Google, Apple, Facebook, and Microsoft (Azure) sign-in buttons. The buttons are always visible; a provider works only after you configure it in Supabase:
+
+1. Open **Authentication → Sign In / Providers** in your Supabase project.
+2. Enable the provider you want to use and enter its Client ID and Client Secret.
+3. In the provider's developer console, register Supabase's callback URL: `https://YOUR-PROJECT-REF.supabase.co/auth/v1/callback`.
+4. Add the website address and `com.fiao.panama://auth` to Supabase **Authentication → URL Configuration → Redirect URLs**.
+
+Provider availability is controlled in Supabase; no build-time feature flag or rebuild is needed when enabling a configured provider. See the [Supabase social sign-in guide](https://supabase.com/docs/guides/auth/social-sign-in) for provider-specific setup.
 
 ### Quick check
 
@@ -197,9 +205,66 @@ Sign up with a real email address, enter the 6-digit code, complete the Setup sc
 |---|---|---|
 | `VITE_SUPABASE_URL` | Yes | Project URL of your Supabase project. |
 | `VITE_SUPABASE_ANON_KEY` | Yes | Public anon (or publishable) key. Safe for the browser because Row Level Security protects the data. |
-| `VITE_ENABLE_GOOGLE` | No | `true` shows the Google sign-in button. Default `false`. |
+| `VITE_APP_URL` | No | Public address of the web (for example `https://YOUR-USER.github.io/Fia-O`). The Android app uses it for links that open outside the app, such as password reset. |
+| `VITE_UPDATES_URL` | No | Address of the Vercel deployment that serves `/api/version` (Android app updates). If empty, the app reads the `app_releases` table in Supabase directly. |
+| `VITE_BASE` | No | Overrides the publishing path. By default it is `/` locally and in Vercel, and `/<repository-name>/` in GitHub Pages (taken from `GITHUB_REPOSITORY`; use `VITE_BASE` for a custom domain). |
 
-Vite only exposes variables that start with `VITE_`. They are read when the dev server or the build starts, so restart after changing them.
+Vite only exposes variables that start with `VITE_`. They are read when the dev server or the build starts, so restart after changing them. `.env.example` lists all of them.
+
+| Environment | Where the variables come from | Build command |
+|---|---|---|
+| Local (`npm run dev`) | `.env.local` | `npm run dev` |
+| GitHub Pages | Repository secrets `VITE_SUPABASE_URL` and `VITE_SUPABASE_ANON_KEY` | automatic on every push to `main` |
+| Android app | `.env.local` | `npm run android` |
+
+GitHub Pages builds and Android builds stop with a clear message if the two Supabase variables are missing, so a broken login is never published.
+
+## Android app (Capacitor)
+
+The Android app wraps the same React code. Everything that is specific to Android lives in `src/native/` and only runs when `IS_NATIVE` (`src/native/useIsNative.js`) is true, so the web is never affected.
+
+1. Complete `.env.local` (copy `.env.example`). `VITE_APP_URL` is optional but recommended.
+2. `npm install`
+3. `npm run android` (builds with `--mode android` and runs `cap sync android`).
+4. `npx cap open android`, then **Build → Build APK(s)**. The test APK is `android/app/build/outputs/apk/debug/app-debug.apk`.
+
+After adding or updating Capacitor plugins, run `npm run android` again.
+
+**Supabase settings for the app.** In **Authentication → URL Configuration → Redirect URLs** add:
+
+- the web address (`VITE_APP_URL`), so the password reset link works;
+- `com.fiao.panama://auth`, so social sign-in providers can return to the app.
+
+**Social sign-in on Android.** OAuth providers open in the system browser rather than inside the WebView, then return through `com.fiao.panama://auth` (declared in `AndroidManifest.xml` and handled in `src/native/native.js`). The same provider buttons and Supabase configuration are used by the web and the APK; no build-time feature flag is required.
+
+**Notifications.** The bell stays fixed at the top-right corner of every screen. The app also schedules one local Android notification at 9:00 when there are overdue accounts or low-stock products (the same alerts as the bell, and only if alerts are on in Profile). It is rescheduled every time the app is opened and cancelled on sign-out. It cannot know about changes made while the app stays closed: that would need a server (push notifications with Firebase). Android asks for the notification permission the first time.
+
+**WhatsApp reminder.** The button opens the `wa.me` link, which Android hands to the WhatsApp app with the chat and the message ready to send (same text as the web).
+
+## Offline mode, sync and history (Android app only)
+
+The web is not affected: everything below only runs when `IS_NATIVE` is true. Code: `src/offline/` (engine, local storage, overlay), `src/native/SyncStatus.jsx` (status and review panel).
+
+- **Offline reading.** After the first sign-in the app keeps a local copy of customers, products, credits and settings (IndexedDB, separated by user). Without internet the screens read that copy. Signing in again offline uses the session already stored on the phone.
+- **Offline writing.** Creates, edits, archives and profile/setup changes go into the local queue first and are sent when there is a connection (in order, with automatic retries). Credit sales from inventory always carry a stable idempotency key. If the safe sale RPC is missing, FIA'O rejects the sale for review instead of retrying through the old non-idempotent signature. The queue survives closing the app and rebooting.
+- **Status.** A small pill at the top-left shows *offline*, *syncing*, *changes to review* or *update available*. Tapping it (or **More → Sync and updates**) opens the panel: connection, last sync, pending changes, history and updates. Records not yet in the cloud show a *Pending* / *Review* tag.
+- **Conflicts and rejections.** If a customer or product was changed on another device after you edited it offline, nothing is overwritten: the change waits in the panel and you choose *Keep server version* or *Use my version*. If a credit rule refuses a queued change (limit, payment higher than the debt, stock), it is kept for review with the reason. Edits made while online are applied directly (last write wins).
+- **Central history.** A new Supabase project receives section 14 from `supabase/schema.sql`. On an existing project, apply migration `001_idempotent_fiado_sale.sql` and then `003_sync_and_archive_guards.sql`. The latter serializes duplicate sync requests, updates `apply_sync_op` to call the idempotent sale function, and blocks archiving a customer while a balance is still owed. Without section 14, ordinary legacy writes can still work, but inventory credit sales fail safely unless the idempotent sale RPC is installed.
+- **Security.** Each user's local data is stored under their own id. Signing out clears that user's local mirror and profile cache, while unresolved operations are preserved for that same user. Android's app sandbox and `allowBackup=false` limit access from other apps and backups, but FIA'O does not yet encrypt IndexedDB data at rest. Use a device lock and avoid shared or rooted devices for accounts containing sensitive customer data.
+- **Tests.** `npm test` runs the automatic tests of the sync engine, the pending-changes layer, the version check and the Vercel functions.
+
+## Updating the Android app
+
+1. Run section 15 of `supabase/schema.sql` once (table `app_releases` and the public storage bucket `app-releases`).
+2. Raise `version` in `package.json` (for example `1.0.1`). The Android version number is calculated from it (`1.2.3` → `10203`) and must grow with every release. Keep using the **same signing key**, otherwise Android will refuse to update without uninstalling.
+3. Build the APK (`npm run android`, then **Build → Generate Signed Bundle / APK** in Android Studio) and upload it to Supabase → Storage → `app-releases`. The release API and Android app accept only HTTPS APK links from this project's public `app-releases` bucket. Android's package installer checks that an update is signed with the same key as the installed app; FIA'O does not currently calculate an APK SHA-256 checksum before handing the download to Android. Keep the signing key private and backed up.
+4. Register the release, either with an `insert` in the SQL Editor or with the Vercel API:
+   `POST https://YOUR-PROJECT.vercel.app/api/release` with header `Authorization: Bearer RELEASE_ADMIN_TOKEN` and a JSON body `{ "version_name": "1.0.1", "version_code": 10001, "apk_url": "https://...", "notes_es": "...", "notes_en": "...", "mandatory": false }`.
+5. Vercel environment variables (server only, never `VITE_`): `SUPABASE_URL`, `SUPABASE_ANON_KEY` (for `/api/version`), `SUPABASE_SERVICE_ROLE_KEY` and `RELEASE_ADMIN_TOKEN` (for `/api/release`). In the app set `VITE_UPDATES_URL` to the Vercel address.
+
+The app checks for a new version when it opens and every few hours. An optional update shows the release notes with *Later*; a mandatory one blocks the app until it is installed. *Download and install* tries to hand the APK to Android's downloader (this still has to be verified on a real device): Android asks once for permission to install apps from that source. The installation keeps all data. The app cannot show download progress (a native plugin would be needed).
+
+**Tutorial.** It opens by itself only the first time an account signs in. That is remembered in the account (Supabase Auth user metadata, no table change) and on the device, so it does not come back on another phone or after reinstalling.
 
 ## Deploying to Vercel
 
@@ -237,17 +302,18 @@ Every push to the main branch redeploys automatically. After changing environmen
 │   ├── main.jsx             # App entry point
 │   ├── App.jsx              # Providers and routes
 │   ├── index.css            # Tailwind + theme colors (light and dark CSS variables)
-│   ├── api/
+│   ├── api/                 # Everything that talks to Supabase
 │   │   ├── supabaseClient.js    # The Supabase client (reads the VITE_ variables)
-│   │   └── authClient.js        # Sign up, log in, OTP, password reset, profile (see note below)
-│   ├── lib/                 # Business logic and data access
-│   │   ├── credit.js            # Credit rules: balances, statuses, limits, money and date helpers
+│   │   ├── authClient.js        # Sign up, log in, OTP, password reset, profile (see note below)
 │   │   ├── creditApi.js         # Credit screen data, settings, saving credit rules
 │   │   ├── clientsApi.js        # Customers: list, create, edit, archive, reminders
 │   │   ├── productsApi.js       # Products and the credit sale from inventory
 │   │   ├── dashboardApi.js      # Everything the dashboard and the bell need
 │   │   ├── setupApi.js          # Saves the first-time setup in one step
-│   │   ├── contactApi.js        # Saves Contact messages
+│   │   └── contactApi.js        # Saves Contact messages
+│   ├── contexts/            # Session (AuthContext), language and light / dark theme
+│   ├── lib/                 # Business rules and helpers (pure functions, no UI)
+│   │   ├── credit.js            # Credit rules: balances, statuses, limits, money and date helpers
 │   │   ├── products.js          # Product and cart rules
 │   │   ├── reports.js           # All report calculations
 │   │   ├── reportExport.js      # Excel and PDF downloads
@@ -255,9 +321,11 @@ Every push to the main branch redeploys automatically. After changing environmen
 │   │   ├── alerts.js            # What appears in the notifications bell
 │   │   ├── settings.js          # Profile, credit rules and setup validation
 │   │   ├── contact.js           # Contact form validation
-│   │   ├── AuthContext.jsx      # Session state
-│   │   ├── ThemeContext.jsx     # Light / dark theme
+│   │   ├── env.js               # Every VITE_ variable, read in one place
+│   │   ├── translations.js      # Spanish / English texts
 │   │   └── query-client.js      # TanStack Query configuration
+│   ├── tour/                # The guided tutorial (steps, overlay, provider, translations)
+│   ├── native/              # Android app only (Capacitor): bottom bar, splash, back button, mobile screens
 │   ├── pages/               # One file per screen
 │   └── components/          # Navbar, Footer, NotificationBell, ProtectedRoute, ProfileGate, ui/ (shadcn)
 ├── vercel.json              # Routing rule for Vercel
@@ -268,7 +336,7 @@ Every push to the main branch redeploys automatically. After changing environmen
 **How the pieces fit together:**
 
 ```text
-Page (src/pages)  →  data file (src/lib/*Api.js)  →  Supabase  →  Row Level Security
+Page (src/pages)  →  data file (src/api/*Api.js)  →  Supabase  →  Row Level Security
         ↑
   rules and calculations (src/lib/credit.js and friends) — pure functions, no UI
 ```
@@ -289,6 +357,7 @@ The full definition is in [`supabase/schema.sql`](supabase/schema.sql).
 | `credit_entries` | Every credit (`fiado`) and every payment (`pago`). Insert-only. |
 | `credit_entry_items` | Which products were taken in each credit sale, with the price at that moment. |
 | `reminders` | Log of payment reminders prepared for customers. |
+| `audit_log` | Server-side history of offline operations and their applied, conflicting or rejected status (created by migration 003). |
 | `contact_messages` | Messages sent from the Contact page. |
 
 Database rules (triggers and functions):
@@ -326,14 +395,14 @@ Every table has Row Level Security: a merchant only reads and changes rows where
 
 ## Known limitations
 
-- The interface is only in English.
-- There is no offline mode: an internet connection is required.
+- The web version needs an internet connection. The Android app has limited offline support (reading a local copy and a queue of changes, see *Offline mode* above); changes saved offline are **not confirmed** until they sync and can still be rejected (limit, stock, payment higher than the debt).
+- If the phone cannot provide durable storage (IndexedDB), the app does not work offline: it warns and sends changes straight to the server.
 - Payment reminders are not sent automatically. FIA'O prepares the WhatsApp message and opens WhatsApp with it ready; the merchant presses send. (Fully automatic messages require the paid WhatsApp Business API.)
 - Customers do not have accounts and cannot pay inside the app; the merchant records the payment.
 - Product images are added by link; uploading photos is not available yet.
 - The *Digital Catalog* card in Products is a placeholder for a future feature.
 - Notifications appear only inside the app (the bell); there are no push notifications or emails.
-- There is no automated test suite yet.
+- `npm test` ejecuta las pruebas automatizadas del motor offline, las reglas de negocio, las rutas de API y los contratos de seguridad.
 
 ## Notes for contributors
 
@@ -348,3 +417,7 @@ Every table has Row Level Security: a merchant only reads and changes rows where
 
 No license has been chosen yet. Until one is added, all rights are reserved by the author.
 volver a actualizar la web
+
+## Project status and database compatibility
+
+`Fiao.test` is the primary repository and replaces the previous `Fia-O` codebase for continued development. Before deploying it against an existing Supabase project, review the migration order, the old-client incompatibility, and the Android release setup in [`docs/ESTADO_Y_COMPATIBILIDAD_SUPABASE.md`](docs/ESTADO_Y_COMPATIBILIDAD_SUPABASE.md). Do not run the complete `supabase/schema.sql` against a database that already contains data; use reviewed, pending migrations only.

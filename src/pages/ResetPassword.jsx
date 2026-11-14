@@ -2,17 +2,17 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { base44 } from "@/api/authClient";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Lock, Loader2, AlertTriangle } from "lucide-react";
 import AuthLayout from "@/components/AuthLayout";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { withBase } from "@/lib/withBase";
+import PasswordInput from "@/components/PasswordInput";
 export default function ResetPassword() {
     const { t } = useLanguage();
     const [ready, setReady] = useState(null);
    useEffect(() => {
-     base44.auth.hasSession().then(setReady);
+     base44.auth.hasSession().then(setReady).catch(() => setReady(false)); // si falla, se muestra "enlace no válido" en vez del spinner eterno
    }, []);
 
   const [newPassword, setNewPassword] = useState("");
@@ -81,9 +81,9 @@ export default function ResetPassword() {
           <Label htmlFor="password">{t("New Password")}</Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
-            <Input
+            <PasswordInput
               id="password"
-              type="password"
+              
               autoComplete="new-password"
               autoFocus
               placeholder="••••••••"
@@ -98,9 +98,9 @@ export default function ResetPassword() {
           <Label htmlFor="confirm">{t("Confirm Password")}</Label>
           <div className="relative">
             <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
-            <Input
+            <PasswordInput
               id="confirm"
-              type="password"
+              
               autoComplete="new-password"
               placeholder="••••••••"
               value={confirmPassword}

@@ -1,11 +1,12 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Search, Pencil, Trash2, Plus, Bell, Package, Minus, X } from "lucide-react";
-import { fetchProducts, addProduct, editProduct, archiveProduct, registerFiadoSale, PRODUCT_KEYS } from "@/lib/productsApi";
-import { fetchLedger, LEDGER_KEYS } from "@/lib/creditApi";
+import { fetchProducts, addProduct, editProduct, archiveProduct, registerFiadoSale, PRODUCT_KEYS } from "@/api/productsApi";
+import { fetchLedger, LEDGER_KEYS } from "@/api/creditApi";
+import { newId } from "@/offline";
 import { money, isLowStock, effectiveLimit, addDays, todayPanama, shortYmd } from "@/lib/credit";
 import {
   UNITS,
@@ -17,7 +18,9 @@ import {
   cartTotal,
   checkSale,
 } from "@/lib/products";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import SyncBadge from "@/native/SyncBadge";
+import { confirmAction } from "@/native/confirm";
 
 const fieldStyle = { backgroundColor: "var(--white)", borderColor: "var(--border-cream)", color: "var(--text)" };
 const cardStyle = { backgroundColor: "var(--white)", border: "1px solid var(--border-cream)" };
@@ -46,7 +49,7 @@ function Note({ note }) {
       className="text-sm rounded-xl px-3 py-2 mt-3"
       style={{ backgroundColor: ok ? "var(--ok-bg)" : "var(--bad-bg)", color: ok ? "var(--ok-text)" : "var(--bad-text)" }}
     >
-      {t(note.text)}
+      {note.textKey ? t(note.textKey, note.vars) : t(note.text)}
     </p>
   );
 }
@@ -75,7 +78,8 @@ export function ProductModal({ product, categories, onClose }) {
   }, [onClose]);
 
   const save = useMutation({
-    mutationFn: (values) => (isNew ? addProduct(values) : editProduct(product.id, values)),
+    mutationFn: (/** @type {{ name: string; category: string | null; price: number; stock: number; unit: string; min_stock: number; image_url: string | null }} */ values) =>
+      (isNew ? addProduct(values) : editProduct(product.id, values)),
     onSuccess: () => {
       PRODUCT_KEYS.forEach((key) => queryClient.invalidateQueries({ queryKey: key }));
       onClose();
@@ -189,6 +193,7 @@ export function SaleTab({ products, query, initialCart = {} }) {
   const [due, setDue] = useState("");
   const [note, setNote] = useState("");
   const [msg, setMsg] = useState(null);
+  const saleKey = useRef({ sig: "", id: "" }); // clave de idempotencia: la misma mientras la venta no cambie
 
   const client = clients.find((c) => c.id === clientId) || clients[0];
   const today = todayPanama();
@@ -212,12 +217,18 @@ export function SaleTab({ products, query, initialCart = {} }) {
 
   const sale = useMutation({
     mutationFn: registerFiadoSale,
-    onSuccess: (_, vars) => {
+    onSuccess: (result) => {
       [...LEDGER_KEYS, ...PRODUCT_KEYS].forEach((key) => queryClient.invalidateQueries({ queryKey: key }));
       setCart({});
       setDue("");
       setNote("");
-      setMsg({ type: "ok", text: `Sale registered: ${money(vars.total)} added to ${vars.clientName}'s debt.` });
+      saleKey.current = { sig: "", id: "" };
+      // Sin conexión la venta queda en la cola del teléfono: todavía no está confirmada en la nube.
+      setMsg(
+        result?.status === "queued"
+          ? { type: "ok", textKey: "Sale saved on this phone: {amount} for {name}. It will be confirmed when it syncs.", vars: { amount: money(total), name: client.name } }
+          : { type: "ok", textKey: "Sale registered: {amount} added to {name}'s debt.", vars: { amount: money(total), name: client.name } }
+      );
     },
     onError: (e) => setMsg({ type: "error", text: e.message }),
   });
@@ -228,13 +239,15 @@ export function SaleTab({ products, query, initialCart = {} }) {
     const problem = checkSale({ lines, client, limit, autoBlock: settings.auto_block });
     if (problem) return setMsg({ type: "error", text: problem });
     if (due && due < today) return setMsg({ type: "error", text: "The due date can't be in the past." });
+    const items = lines.map((l) => ({ product_id: l.product.id, quantity: l.qty }));
+    const sig = JSON.stringify([client.id, items, due, note]);
+    if (saleKey.current.sig !== sig) saleKey.current = { sig, id: newId() };
     sale.mutate({
       client_id: client.id,
-      items: lines.map((l) => ({ product_id: l.product.id, quantity: l.qty })),
+      items,
+      request_id: saleKey.current.id,
       due_date: due,
       note,
-      total,
-      clientName: client.name,
     });
   };
 
@@ -279,7 +292,10 @@ export function SaleTab({ products, query, initialCart = {} }) {
                 {p.image_url ? <img src={p.image_url} alt="" className="w-full h-full object-cover" /> : <Package className="w-5 h-5" style={{ color: "var(--text-faint)" }} />}
               </div>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>{p.name}</p>
+                <div className="flex items-center gap-2 min-w-0">
+                  <p className="text-sm font-semibold truncate" style={{ color: "var(--text)" }}>{p.name}</p>
+                  <SyncBadge status={p._sync} />
+                </div>
                 <p className="text-xs" style={{ color: out ? "var(--bad-text)" : "var(--text-muted)" }}>
                   {money(p.price)} · {out ? t("Out of stock") : `${formatQty(p.stock)} ${t(p.unit)} ${t("left")}`}
                 </p>
@@ -375,7 +391,9 @@ export default function Products({ initialTab = "Inventory" }) {
   });
   const remove = (p) => {
     setActionError("");
-    if (window.confirm(`Remove ${p.name}? It will leave your inventory. Past sales keep their history.`)) archive.mutate(p.id);
+    confirmAction(`Remove ${p.name}? It will leave your inventory. Past sales keep their history.`).then((ok) => {
+      if (ok) archive.mutate(p.id);
+    });
   };
 
   const tabButton = (key, label) => (

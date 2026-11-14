@@ -2,9 +2,9 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { Bell } from "lucide-react";
-import { fetchDashboard } from "@/lib/dashboardApi";
+import { fetchDashboard } from "@/api/dashboardApi";
 import { buildAlerts, badgeText } from "@/lib/alerts";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 const MAX_SHOWN = 8;
 

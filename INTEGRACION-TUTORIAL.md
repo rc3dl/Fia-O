@@ -14,12 +14,12 @@ Esta versión integra `tutorial-fiao.zip` sobre la versión principal `Fia-O-mai
 
 ## Archivos principales añadidos
 
-- `src/components/tour/TourProvider.jsx`
-- `src/components/tour/TourOverlay.jsx`
-- `src/components/tour/TourButton.jsx`
-- `src/lib/tour.js`
-- `src/lib/tourSteps.js`
-- `src/lib/tourTranslations.js`
+- `src/tour/TourProvider.jsx`
+- `src/tour/TourOverlay.jsx`
+- `src/tour/TourButton.jsx`
+- `src/tour/tour.js`
+- `src/tour/tourSteps.js`
+- `src/tour/tourTranslations.js`
 
 ## Verificación realizada
 

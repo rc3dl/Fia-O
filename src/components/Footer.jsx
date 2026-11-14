@@ -1,109 +1,72 @@
-
 import React from "react";
 import { Link } from "react-router-dom";
-import { Mail } from "lucide-react";
-import { useLanguage } from "@/lib/LanguageContext";
+import { ArrowUpRight } from "lucide-react";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { withBase } from "@/lib/withBase";
+import { IS_NATIVE } from "@/native/useIsNative";
 
 function Logo() {
   return (
     <img
       src={withBase("/Logo-fiao-120x40.svg")}
       alt="FIA'O"
-      className="h-8 w-auto select-none"
+      className="h-9 w-auto select-none sm:h-10"
     />
   );
 }
 
 export default function Footer() {
-  const { t } = useLanguage();
+  const { language } = useLanguage();
+  const es = language === "es";
+  if (IS_NATIVE) return null;
+
+  const productLinks = [
+    { to: "/#funciones", label: es ? "Funciones" : "Features" },
+    { to: "/#como-funciona", label: es ? "Cómo funciona" : "How it works" },
+    { to: "/#android", label: es ? "Aplicación Android" : "Android app" },
+    { to: "/#preguntas", label: es ? "Preguntas frecuentes" : "FAQ" },
+  ];
 
   return (
-    <footer className="w-full">
-      <div
-        className="w-full py-6"
-        style={{ backgroundColor: "var(--surface)" }}
-      >
-        <div className="mx-auto max-w-6xl px-6">
-
-          <div className="flex flex-col md:flex-row justify-between gap-6">
-
-            {/* Brand */}
-            <div className="max-w-xs">
-              <Logo />
-              <p
-                className="text-xs mt-2 leading-relaxed"
-                style={{ color: "var(--text-muted)" }}
-              >
-                {t("The app for shopkeepers to manage their credit lines without paper notebooks or wall markings.")}
-              </p>
-            </div>
-
-            {/* Useful Links */}
-            <div className="flex flex-wrap gap-x-8 gap-y-3 text-sm">
-              <Link
-                to="/"
-                className="hover:underline"
-                style={{ color: "var(--text-muted)" }}
-              >
-                {t("Website")}
-              </Link>
-
-              <Link
-                to="/account"
-                className="hover:underline"
-                style={{ color: "var(--text-muted)" }}
-              >
-                {t("My Account")}
-              </Link>
-
-              <Link
-                to="/terms"
-                className="hover:underline"
-                style={{ color: "var(--text-muted)" }}
-              >
-                {t("Terms of Service")}
-              </Link>
-
-              <Link
-                to="/privacy"
-                className="hover:underline"
-                style={{ color: "var(--text-muted)" }}
-              >
-                {t("Privacy Policy")}
-              </Link>
-
-              <a
-                href="mailto:hola@fiao.app"
-                className="flex items-center gap-1.5 hover:underline"
-                style={{ color: "var(--text-muted)" }}
-              >
-                <Mail className="w-3.5 h-3.5" />
-                {t("Contact")}
-              </a>
-            </div>
+    <footer className="w-full" style={{ backgroundColor: "#2D2926" }}>
+      <div className="mx-auto max-w-6xl px-6 py-12 sm:py-14">
+        <div className="grid gap-10 border-b border-white/15 pb-10 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr]">
+          <div className="max-w-sm">
+            <Link to="/" aria-label="FIA'O, inicio"><Logo /></Link>
+            <p className="mt-4 text-sm leading-relaxed text-white/65">
+              {es
+                ? "Una forma más clara de organizar clientes, fiados, pagos e inventario para pequeños negocios."
+                : "A clearer way to organize customers, credit, payments, and inventory for small businesses."}
+            </p>
+            <Link to="/login" className="mt-5 inline-flex items-center gap-1 text-sm font-semibold text-[#F9D103] transition hover:gap-2">
+              {es ? "Acceso a tu cuenta" : "Sign in to your account"} <ArrowUpRight className="h-4 w-4" />
+            </Link>
           </div>
 
-          {/* Bottom */}
-          <div
-            className="mt-5 pt-4 border-t flex flex-col sm:flex-row justify-between gap-2"
-            style={{ borderColor: "var(--border-cream)" }}
-          >
-            <span
-              className="text-xs"
-              style={{ color: "var(--text-faint)" }}
-            >
-              {t("© 2026 FIA'O. All rights reserved.")}
-            </span>
-
-            <span
-              className="text-xs"
-              style={{ color: "var(--text-faint)" }}
-            >
-              {t("Made for local businesses")}
-            </span>
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-white/45">{es ? "Explora" : "Explore"}</h2>
+            <ul className="mt-4 space-y-3">
+              {productLinks.map((item) => (
+                <li key={item.to}>
+                  <Link to={item.to} className="text-sm text-white/75 transition hover:text-white">{item.label}</Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
+          <div>
+            <h2 className="text-xs font-bold uppercase tracking-[0.16em] text-white/45">{es ? "Información" : "Information"}</h2>
+            <ul className="mt-4 space-y-3">
+              <li><Link to="/login" className="text-sm text-white/75 transition hover:text-white">{es ? "Soporte para usuarios (iniciar sesión)" : "User support (sign in)"}</Link></li>
+              <li><Link to="/privacy" className="text-sm text-white/75 transition hover:text-white">{es ? "Política de privacidad" : "Privacy policy"}</Link></li>
+              <li><Link to="/terms" className="text-sm text-white/75 transition hover:text-white">{es ? "Términos y condiciones" : "Terms and conditions"}</Link></li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3 pt-6 text-xs text-white/45 sm:flex-row sm:items-center sm:justify-between">
+          <span>© {new Date().getFullYear()} FIA'O. {es ? "Todos los derechos reservados." : "All rights reserved."}</span>
+          <span>{es ? "Hecho para pequeños negocios." : "Made for small businesses."}</span>
         </div>
       </div>
     </footer>

@@ -3,10 +3,14 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Search, Send, Plus, X } from "lucide-react";
-import { useAuth } from "@/lib/AuthContext";
-import { fetchClients, addClient, editClient, archiveClient, logReminder } from "@/lib/clientsApi";
-import { money, initials, validatePhone, waLink, reminderText } from "@/lib/credit";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { fetchClients, addClient, editClient, archiveClient, logReminder } from "@/api/clientsApi";
+import { money, initials, validatePhone, waLink, reminderText, parseLimit } from "@/lib/credit";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { IS_NATIVE } from "@/native/useIsNative";
+import { confirmAction } from "@/native/confirm";
+import { openExternal } from "@/native/openExternal";
+import SyncBadge from "@/native/SyncBadge";
 
 const FILTERS = ["All", "On Time", "Pending", "Overdue"];
 
@@ -22,6 +26,39 @@ function StatusBadge({ status }) {
     <span className="px-2.5 py-1 rounded-full text-xs font-semibold" style={{ backgroundColor: s.bg, color: s.color }}>
       {t(status)}
     </span>
+  );
+}
+
+// Android: cada cliente como una tarjeta táctil (en lugar de una fila de tabla).
+function ClientCard({ c, onOpen }) {
+  const { t } = useLanguage();
+  return (
+    <button type="button" onClick={onOpen} className="fiao-client w-full text-left">
+      <div className="flex items-center gap-3">
+        <span className="w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold text-white flex-shrink-0" style={{ backgroundColor: "#B91C1C" }}>
+          {initials(c.name)}
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[15px] font-bold truncate" style={{ color: "var(--text)" }}>{c.name}</p>
+          <p className="text-xs truncate" style={{ color: "var(--text-faint)" }}>{c.phone || t("No phone")}</p>
+        </div>
+        <div className="flex flex-col items-end gap-1">
+          <StatusBadge status={c.status} />
+          <SyncBadge status={c._sync} />
+        </div>
+      </div>
+      <div className="flex items-end justify-between mt-3 pt-3" style={{ borderTop: "1px dashed var(--border-cream)" }}>
+        <div>
+          <p className="text-[10px] font-bold tracking-wider" style={{ color: "var(--text-faint)" }}>{t("PENDING DEBT")}</p>
+          <p className="text-xl font-extrabold leading-tight" style={{ color: c.balance > 0 ? "var(--accent-text)" : "var(--text-faint)", fontFamily: "Poppins" }}>
+            {c.balance > 0 ? money(c.balance) : "—"}
+          </p>
+        </div>
+        <p className="text-xs" style={{ color: "var(--text-muted)" }}>
+          {c.purchases} {t(c.purchases === 1 ? "purchase" : "purchases")} <span style={{ color: "var(--accent-text)" }}>→</span>
+        </p>
+      </div>
+    </button>
   );
 }
 
@@ -47,7 +84,8 @@ function ClientModal({ client, onClose }) {
     onClose();
   };
   const save = useMutation({
-    mutationFn: (values) => (isNew ? addClient(values) : editClient(client.id, values)),
+    mutationFn: (/** @type {{ name: string; phone: string; credit_limit: string | number }} */ values) =>
+      (isNew ? addClient(values) : editClient(client.id, values)),
     onSuccess: done,
     onError: (e) => setError(e.message),
   });
@@ -63,7 +101,7 @@ function ClientModal({ client, onClose }) {
     if (!name.trim()) return setError("Name is required.");
     const phoneError = validatePhone(phone);
     if (phoneError) return setError(phoneError);
-    if (limit !== "" && (Number.isNaN(Number(limit)) || Number(limit) < 0)) {
+    if (Number.isNaN(parseLimit(limit))) {
       return setError("Credit limit must be a number of 0 or more.");
     }
     save.mutate({ name, phone, credit_limit: limit });
@@ -77,11 +115,9 @@ function ClientModal({ client, onClose }) {
       return setError(`${client.name} still owes ${money(client.balance)}. Register the payment first, then archive.`);
     }
 
-    if (
-      window.confirm(t(`Archive ${client.name}? They will disappear from the list, but their history is kept.`))
-    ) {
-      archive.mutate();
-    }
+    confirmAction(t(`Archive ${client.name}? They will disappear from the list, but their history is kept.`)).then((ok) => {
+      if (ok) archive.mutate();
+    });
   };
 
   const busy = save.isPending || archive.isPending;
@@ -128,7 +164,7 @@ function ClientModal({ client, onClose }) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <label className="block">
             <span className="text-xs font-semibold block mb-1.5" style={{ color: "var(--text-muted)" }}>{t("NAME *")}</span>
-            <input value={name} onChange={(e) => setName(e.target.value)} autoFocus placeholder="Ramón Batista"
+            <input value={name} onChange={(e) => setName(e.target.value)} autoFocus placeholder="Ramón Batista" autoCapitalize="words" autoComplete="off"
               className="w-full rounded-xl px-4 py-2.5 text-sm border outline-none" style={inputStyle} />
           </label>
           <label className="block">
@@ -204,7 +240,7 @@ export default function Clients() {
     () =>
       clients
         .filter((c) => c.balance > 0)
-        .sort((a, b) => (b.overdue > 0) - (a.overdue > 0) || b.balance - a.balance),
+        .sort((a, b) => Number(b.overdue > 0) - Number(a.overdue > 0) || b.balance - a.balance),
     [clients]
   );
   const target = debtors.find((c) => c.id === reminderId) || debtors[0];
@@ -218,7 +254,7 @@ export default function Clients() {
 
   const sendReminder = () => {
     if (!target || !link) return;
-    window.open(link, "_blank", "noopener"); // se abre primero para que el navegador no lo bloquee
+    openExternal(link); // se abre primero para que el navegador no lo bloquee
     reminder.mutate({ client_id: target.id, message });
   };
 
@@ -303,6 +339,13 @@ export default function Clients() {
               ) : filtered.length === 0 ? (
                 <p className="py-10 text-center text-sm" style={{ color: "var(--text-muted)" }}>{t("No clients match your search or filter.")}</p>
               ) : (
+                IS_NATIVE ? (
+                <div data-tour="clients-table" className="space-y-3">
+                  {filtered.map((c) => (
+                    <ClientCard key={c.id} c={c} onOpen={() => setModal({ client: c })} />
+                  ))}
+                </div>
+                ) : (
                 <div data-tour="clients-table" className="overflow-x-auto">
                   <table className="w-full">
                     <thead>
@@ -343,6 +386,7 @@ export default function Clients() {
                     </tbody>
                   </table>
                 </div>
+                )
               )}
 
               {/* Recordatorio: solo aparece si alguien debe */}

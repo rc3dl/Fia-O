@@ -1,34 +1,59 @@
-# AGENTS.md
+# AGENTS.md — FIA'O
 
-## Project Context
+## Proyecto
 
-This is a Base44 app repository. Treat it as user-owned application code, keep changes focused on the user's request, and preserve existing project conventions.
+FIA'O es una aplicación para pequeños comercios de Panamá: clientes, fiados/créditos, pagos, productos/inventario y reportes. Existe como web (GitHub Pages) y como app Android (Capacitor) que comparten el mismo código.
 
-Start with `README.md` for local setup, environment variables, and publish workflow.
+Empieza por `README.md` (instalación, variables de entorno, despliegue y Android).
 
-## Base44 References
+## Arquitectura
 
-- CLI overview: https://docs.base44.com/developers/references/cli/get-started/overview.md
-- Agent skills: https://docs.base44.com/developers/backend/overview/skills.md
+- Frontend: React + Vite (JavaScript/JSX), Tailwind, TanStack Query, React Router.
+- Backend: Supabase (autenticación, base de datos, RPC). No es un proyecto Base44.
+- Android: Capacitor 8. Identificador `com.fiao.panama`.
 
-If your agent supports Agent Skills, install or update Base44 skills before Base44-specific work:
-
-```bash
-npx skills add base44/skills
+```
+src/
+  api/        acceso a Supabase (supabaseClient, authClient y un *Api.js por área)
+  contexts/   sesión, idioma y tema
+  lib/        reglas de negocio y utilidades (funciones puras); env.js lee las variables VITE_
+  tour/       tutorial guiado (pasos, overlay, provider, traducciones)
+  native/     SOLO Android: barra inferior, splash animado, botón atrás, pantallas móviles
+  components/ piezas compartidas (components/ui es el kit de shadcn)
+  pages/      una pantalla por archivo
 ```
 
-## Key Files
+## Web y Android
 
-- `src/`: frontend application source.
-- `src/api/base44Client.js`: frontend Base44 SDK client.
-- `vite.config.js`: Vite config and Base44 Vite plugin setup.
-- `.env.local`: local-only environment values; never commit secrets.
+- Todo lo exclusivo de Android cuelga de `IS_NATIVE` (`src/native/useIsNative.js`) o de la clase `html.is-native` (bloque final de `src/index.css`). En el navegador `IS_NATIVE` es `false`.
+- No cambies la versión web para resolver algo propio de Android.
+- Google no permite iniciar sesión dentro de un WebView: en Android se abre el navegador del sistema y se regresa por `com.fiao.panama://auth` (`authClient.loginWithProvider` y `src/native/native.js`). Ese enlace debe estar en las Redirect URLs de Supabase.
+- Notificaciones en Android: la campana está en la barra superior y `src/native/notifications.js` programa un recordatorio local diario (9:00) con los mismos avisos. WhatsApp se abre con `src/native/openExternal.js`.
+- En Android la barra superior (`src/native/MobileTopBar.jsx`: logo, indicador de sincronización, avisos y perfil) va pegada arriba, y la navegación es la barra inferior (`src/native/BottomDock.jsx`). La barra de navegación del sistema se oculta y reaparece al deslizar (`src/native/native.js`).
 
-## Working Notes
+## Datos, sin conexión y sincronización (solo Android)
 
-- Use `base44 dev` as the default local development command when you need the local Base44 backend. It can run the backend and frontend together.
-- When docs or code mention the frontend being started automatically, that usually means the Base44 project config includes `site.serveCommand`, for example `"serveCommand": "npm run dev"` in `base44/config.jsonc`.
-- For frontend-only work against the hosted Base44 backend, use `base44 dev --remote` (see README). Do not run `npm run dev` on its own: it has no backend.
-- Prefer the existing Base44 CLI workflow over adding new npm scripts for Base44-specific tasks.
-- Reuse the existing SDK client and Vite plugin patterns before adding new Base44 integration paths.
-- Run the relevant checks from `package.json` before finishing code changes.
+- Todas las lecturas pasan por `readOrLocal(remote, local)` y todas las escrituras por `mutate(spec, legacy)` (`src/offline/index.js`). En la web llaman directo a Supabase (`legacy` / `remote`); en Android usan la copia local y la cola.
+- Una escritura nueva debe: tener un `type` conocido, un `record_id` generado en la app (`newId()`), un `group` (el registro del que depende) y su rama equivalente en `apply_sync_op` (`supabase/schema.sql`, sección 14) y en `applyLegacy` y `overlay.js`.
+- El motor (`src/offline/engine.js`) y `overlay.js` no importan nada de Supabase ni del navegador: se prueban con `npm test`. Si los cambias, añade o ajusta pruebas.
+- Las actualizaciones de la app salen de `api/version.js` y `api/release.js` (Vercel) y de `src/native/updates.js`. La versión de Android sale de `package.json`.
+
+## Variables de entorno
+
+Se leen solo en `src/lib/env.js`. Local y Android: `.env.local` (copia `.env.example`). GitHub Pages: secrets del repositorio. `vite.config.js` detiene la compilación de GitHub Actions y de `npm run build:android` si faltan las de Supabase.
+
+## Reglas
+
+1. Revisa `package.json` antes de proponer comandos y comprueba que `package-lock.json` corresponda.
+2. No asumas rutas: inspecciona el árbol real.
+3. No introduzcas `@base44/*` ni comandos Base44.
+4. Usa los módulos de `src/api/`; no dupliques consultas ni lógica de negocio.
+5. No cambies el esquema de Supabase, las políticas RLS ni las RPC sin explicar el impacto.
+6. No expongas claves ni secretos: nada de `service_role` en el frontend ni en variables `VITE_`.
+7. Los textos visibles van en español e inglés (`src/lib/translations.js`).
+8. Si añades un paso o una pantalla al tutorial, actualiza `src/tour/tourSteps.js` y verifica que existan sus elementos `data-tour`.
+9. Actualiza la documentación si cambia la arquitectura, la configuración o el comportamiento.
+
+## Informe de cambios
+
+Indica el requisito, los archivos tocados, la verificación y los pendientes. Distingue revisión estática de prueba real.

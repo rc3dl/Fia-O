@@ -3,16 +3,16 @@ import { useMutation } from "@tanstack/react-query";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { Plus } from "lucide-react";
-import { useAuth } from "@/lib/AuthContext";
-import { sendContactMessage } from "@/lib/contactApi";
+import { useAuth } from "@/contexts/AuthContext";
+import { sendContactMessage } from "@/api/contactApi";
 import { validateContact, CONTACT_LIMITS } from "@/lib/contact";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 
 // Respuestas que solo prometen lo que la web realmente hace.
 export const FAQS = [
   {
     q: "Does it work without internet?",
-    a: "Not at the moment. FIA'O needs an internet connection to save and load your notebook, so make sure you're online when you register credits and payments.",
+    a: "The web version needs an internet connection. The Android app can keep working offline with limits: changes are saved on the phone and sent when the connection returns, and they are only confirmed once they sync.",
   },
   {
     q: "How do I start using the app?",
@@ -62,7 +62,7 @@ export default function Contact() {
     const { t } = useLanguage();
   const { user } = useAuth();
   // Nombre y correo ya vienen de tu cuenta; solo cambian si la persona los edita.
-  const [draft, setDraft] = useState({});
+  const [draft, setDraft] = useState(/** @type {{ name?: string; email?: string }} */ ({}));
   const [message, setMessage] = useState("");
   const [note, setNote] = useState(null);
 

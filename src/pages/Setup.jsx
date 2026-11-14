@@ -1,13 +1,13 @@
 import React, { useState } from "react";
 import { Navigate, useLocation } from "react-router-dom";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { useAuth } from "@/lib/AuthContext";
-import { fetchSettings, LEDGER_KEYS } from "@/lib/creditApi";
-import { completeSetup } from "@/lib/setupApi";
+import { useAuth } from "@/contexts/AuthContext";
+import { fetchSettings, LEDGER_KEYS } from "@/api/creditApi";
+import { completeSetup } from "@/api/setupApi";
 import { userToForm, settingsToForm, validateSetup, isProfileComplete, setupReturnPath, DEFAULT_RULES_FORM } from "@/lib/settings";
 import { money, parseAmount } from "@/lib/credit";
 import { User, Store, Phone, Mail, MapPin, Wallet, Clock, ArrowRight } from "lucide-react";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { withBase } from "@/lib/withBase";
 // Pantalla que aparece después de iniciar sesión cuando todavía falta información del negocio.
 export default function Setup() {
@@ -150,6 +150,7 @@ export default function Setup() {
   );
 }
 
+/** @param {{ icon: React.ElementType; label: string; name: string; value: string | number; onChange: (event: React.ChangeEvent<HTMLInputElement>) => void; placeholder?: string; hint?: string; inputMode?: React.HTMLAttributes<HTMLInputElement>["inputMode"]; autoFocus?: boolean }} props */
 function Field({ icon: Icon, label, name, value, onChange, placeholder, hint, inputMode, autoFocus }) {
   return (
     <label className="block">

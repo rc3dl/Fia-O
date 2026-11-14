@@ -4,7 +4,7 @@ import { Link } from "react-router-dom";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ChevronDown, ShoppingCart, Banknote, TrendingUp, Users, AlertTriangle } from "lucide-react";
-import { fetchLedger, addFiado, addPayment, saveAutoBlock, LEDGER_KEYS } from "@/lib/creditApi";
+import { fetchLedger, addFiado, addPayment, saveAutoBlock, LEDGER_KEYS } from "@/api/creditApi";
 import {
   money,
   parseAmount,
@@ -20,7 +20,9 @@ import {
   summarize,
   percentUsed,
 } from "@/lib/credit";
-import { useLanguage } from "@/lib/LanguageContext";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { confirmAction } from "@/native/confirm";
+import SyncBadge from "@/native/SyncBadge";
 
 function StatusBadge({ status }) {
     const { t } = useLanguage();
@@ -93,21 +95,21 @@ export default function Credit() {
 
   const fiadoMut = useMutation({
     mutationFn: addFiado,
-    onSuccess: () => {
+    onSuccess: (result) => {
       refresh();
       setFiadoAmount("");
       setFiadoDesc("");
       setFiadoDue("");
-      setFiadoNote({ type: "ok", text: "Credit registered." });
+      setFiadoNote({ type: "ok", text: result?.status === "queued" ? "Credit saved on this phone. It will be confirmed when it syncs." : "Credit registered." });
     },
     onError: (e) => setFiadoNote({ type: "error", text: e.message }),
   });
   const payMut = useMutation({
     mutationFn: addPayment,
-    onSuccess: () => {
+    onSuccess: (result) => {
       refresh();
       setPaymentAmount("");
-      setPayNote({ type: "ok", text: "Payment registered." });
+      setPayNote({ type: "ok", text: result?.status === "queued" ? "Payment saved on this phone. It will be confirmed when it syncs." : "Payment registered." });
     },
     onError: (e) => setPayNote({ type: "error", text: e.message }),
   });
@@ -146,9 +148,10 @@ export default function Credit() {
   const markAsPaid = () => {
     setPayNote(null);
     if (!(client.balance > 0)) return setPayNote({ type: "error", text: "This customer has no debt." });
-    if (window.confirm(t(`Mark ${client.name} as paid? This registers a payment of ${money(client.balance)}.`))) {
-      payMut.mutate({ client_id: client.id, amount: client.balance, description: "Marked as paid" });
-    }
+    const paidClient = client;
+    confirmAction(t(`Mark ${paidClient.name} as paid? This registers a payment of ${money(paidClient.balance)}.`), { destructive: false }).then((ok) => {
+      if (ok) payMut.mutate({ client_id: paidClient.id, amount: paidClient.balance, description: "Marked as paid" });
+    });
   };
 
   const card = { backgroundColor: "var(--surface)" };
@@ -186,7 +189,7 @@ export default function Credit() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 lg:grid-cols-[minmax(220px,0.9fr)_minmax(0,1.5fr)_minmax(240px,0.9fr)] gap-5">
+            <div className="grid lg:grid-cols-[minmax(0,1fr)_minmax(0,1.7fr)_minmax(0,1fr)] gap-5">
               {/* Column 1 - Customer */}
               <div className="space-y-5">
                 <div data-tour="credit-customer" className="rounded-2xl p-5" style={card}>
@@ -269,7 +272,7 @@ export default function Credit() {
                         const isPayment = row.kind === "pago";
                         const Icon = isPayment ? Banknote : ShoppingCart;
                         return (
-                          <div key={row.id} className="flex flex-wrap xl:flex-nowrap items-center gap-3 p-3 rounded-xl" style={{ backgroundColor: "var(--white)", border: "1px solid var(--border-cream)" }}>
+                          <div key={row.id} className="flex flex-wrap sm:flex-nowrap items-center gap-x-3 gap-y-2 p-3 rounded-xl" style={{ backgroundColor: "var(--white)", border: "1px solid var(--border-cream)" }}>
                             <span className="text-xs font-semibold w-14" style={{ color: "var(--text-muted)" }}>{shortDate(row.created_at, language === "es" ? "es-PA" : "en-GB")}</span>
                             <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: isPayment ? "var(--ok-bg)" : "var(--warn-bg)" }}>
                               <Icon className="w-4 h-4" style={{ color: isPayment ? "var(--ok-text)" : "var(--warn-text)" }} />
@@ -285,6 +288,7 @@ export default function Credit() {
                             <span className="text-sm font-bold" style={{ color: isPayment ? "var(--ok-text)" : "var(--text)" }}>
                               {isPayment ? "− " : ""}{money(row.amount)}
                             </span>
+                            <SyncBadge status={row._sync} />
                             <StatusBadge status={row.status} />
                           </div>
                         );
@@ -333,7 +337,7 @@ export default function Credit() {
                     style={fieldStyle}
                   />
                   <p className="text-xs font-semibold block mb-2" style={{ color: "var(--text-muted)" }}>{t("Payment Type")}</p>
-                  <div className="grid grid-cols-1 xl:grid-cols-2 gap-2 mb-4">
+                  <div className="grid grid-cols-2 gap-2 mb-4">
                     {[
                       { key: "partial", label: "Partial Payment" },
                       { key: "full", label: "Full Payment" },
