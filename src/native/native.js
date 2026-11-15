@@ -1,3 +1,4 @@
+
 // Integración nativa de Android (Capacitor 8). Solo se carga dentro de la app.
 import { SystemBars, SystemBarsStyle, SystemBarType } from "@capacitor/core";
 import { App } from "@capacitor/app";
@@ -61,6 +62,12 @@ export async function initNative() {
 
   try {
     await SystemBars.setStyle({ style: SystemBarsStyle.Dark });
+  } catch {
+    /* se ignora */
+  }
+
+  try {
+    await SystemBars.hide({ bar: SystemBarType.StatusBar });
   } catch {
     /* se ignora */
   }
