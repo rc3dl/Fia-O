@@ -189,28 +189,35 @@ html.is-native [data-tour="bell"] [role="dialog"] {
 }
 
 /* ---- Barra inferior flotante: límites de pantalla y centrado adaptativo ---- */
+
+/* ---- Barra inferior flotante: centrado y márgenes Android ---- */
 .fiao-dock {
   position: fixed;
-  left: max(16px, env(safe-area-inset-left, 0px));
-  right: max(16px, env(safe-area-inset-right, 0px));
+  left: 50%;
+  right: auto;
   bottom: calc(var(--sab) + 10px);
   z-index: 40;
-  width: auto;
-  max-width: 440px;
-  margin-inline: auto;
+
+  width: calc(100% - 40px);
+  max-width: 400px;
   box-sizing: border-box;
+
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 4px;
   padding: 6px;
-  transform: none;
+
+  transform: translateX(-50%);
   border-radius: 30px;
   background-color: var(--dock-bg);
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.38), inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.38),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.07);
+
   transition: transform 0.3s var(--ease-out), opacity 0.2s;
   animation: fiao-dock-in 0.5s var(--ease-out) both;
 }
+
 .fiao-tab {
   flex: 1 1 0; min-width: 0; height: 48px;
   display: flex; align-items: center; justify-content: center;
