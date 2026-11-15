@@ -188,9 +188,7 @@ html.is-native [data-tour="bell"] [role="dialog"] {
   border-radius: 24px;
 }
 
-/* ---- Barra inferior flotante: límites de pantalla y centrado adaptativo ---- */
-
-/* ---- Barra inferior flotante: centrado y márgenes Android ---- */
+/* ---- Barra inferior flotante: centrado Android ---- */
 .fiao-dock {
   position: fixed;
   left: 50%;
